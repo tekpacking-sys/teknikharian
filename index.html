@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <style>
+    body {
+        display: flex;
+        justify-content: center;
+        background-color: aliceblue;
+        padding: 0px;
+    }
+    .hasil {
+        width: 100%;
+        max-width: 800px;
+        background-color: aliceblue;
+        border-radius: 8px;
+    }
+    .header {
+    background-color: aliceblue;
+    min-height: 50px;
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    gap:5px;
+    
+}
+    h3 {
+        margin-right: 90px;
+    }
+    .btn-header {
+        background-color: teal;
+        margin-right: 10px;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 50px;
+        color: #fff;
+        font-size: 20px;
+    }
+    .scroll-area {
+        width: 100%;
+        overflow-y: auto;
+        padding-right: 5px;
+        padding-bottom: 80px; /* ruang untuk footer */
+        box-sizing: border-box;
+        }
+    .blue, .red { 
+        width: 70px; 
+        padding: 10px; 
+        border: none; 
+        border-radius: 5px;
+        color: #fff;
+        }
+    .blue {
+        background-color: dodgerblue;
+    }
+    .red {
+        background-color: red;
+    }
+    .info-table {
+    margin-top: 3px;
+    color: #000;
+}
+    .info-table td {
+    border: none !important;
+    padding: 2px 5px 2px 0 !important;
+    font-weight: bold;
+    font-size: 16px;
+    vertical-align: top;
+}
+/* Lebar tetap untuk label agar titik dua sejajar */
+    .info-table td:first-child {
+    width: 80px;
+}
+    .info-table td:nth-child(2) {
+    width: 10px;
+}
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #0008;
+        font-size: 15px;
+        padding: 5px;
+        padding-left: 10px;
+    }
+    th {
+        background-color: LightSteelBlue;
+        line-height: 30px;
+    }
+    .category-row {
+        background-color: #99CCFF !important;
+        color: #000 ;
+        font-weight: bold;
+    }
+    .task-group {
+        margin-bottom: 20px;
+        border-bottom: 3px dashed #0006;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;"
+    }
+    .task-actions {
+        display: flex;
+        justify-content: right;
+        gap: 20px;
+        padding: 10px;
+    }
+    .footer {
+    background-color: aliceblue;
+    width: 100%;
+    min-height: 50px;
+    position: fixed;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1px;
+}
+    .hps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .del {
+        background-color: powderblue;
+        width: 70%;
+        height: 20%;
+        max-width: 400px;
+        margin: 210px auto;
+        padding: 30px;
+        padding-top: 7%;
+        border: none;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .takon {
+        white-space: nowrap;
+        margin-left: 50px;
+    }
+    
+/*=== DIALOG===*/
+    .dialog { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; background-color: #0009;
+    }
+    .dialog.show { display: block; }
+    .form-container {
+        background-color: #DBE9FA;
+        width: 93%;
+        max-width: 400px;
+        margin: 60px auto;
+        border: 1px solid #333;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
+    }
+    .form-body { overflow-y: auto; padding: 5px; flex: 1; }
+    .form-header {
+        padding-left: 20px;
+    }
+    .form-footer { 
+        display: flex;
+        padding: 10px;
+        padding-top: 15px;
+        background-color: #DBE9FA;
+        border-top: 1px solid #ccc;
+        height: 6%;
+        justify-content: right;
+        gap: 15px;
+        border-radius: 10px;
+    }
+    .author {
+        font-size: 12px;
+        margin-right: 20px;
+        margin-top: 23px;
+    }
+    .form-group {
+        display: flex;
+    gap: 8px;
+    position: relative;
+    align-items: center;
+    margin-bottom: 6px;
+    
+    }
+    
+    .form-group label {
+        flex: 0 0 35%;
+    font-size: 14px;
+    }
+    
+    .form-group input,
+    .form-group select {
+    background-color: #D0DDEE;
+    color: #000;
+    border: 1px solid #0006;
+    border-radius: 2px;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    font-size: 14px;
+    }
+    
+    .rinci label {
+    color: #000;
+    font-size: 17px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+    
+    .textarea {
+        background-color: #D0DDEE;
+        width: 99%;
+        margin-left: 2px;
+        margin-top: 5px;
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #0008; 
+        border-radius: 10px;
+        box-sizing: border-box;
+        font-size: 14px;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 10px;
+    } 
+
+    fieldset {
+        border: 1px solid #0006;
+        border-radius: 10px; margin-bottom: 20px; 
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;;
+    }
+    legend { 
+        font-size: 16px; 
+        font-weight: bold;
+        color: #000;
+    }
+
+    .custom-autocomplete-list {
+        position: absolute; z-index: 100; background: white; border: 1px solid #ccc;
+        border-radius: 5px; width: 60%; right: 5px; max-height: 150px; overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: none;
+    }
+    .custom-autocomplete-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; color: #333; font-size: 14px; }
+
+/* === NOTIFICATION TOAST === */
+    .toast-notification {
+        position: fixed;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: darkgreen;
+        color: white;
+        width: 50%;
+        white-space: nowrap;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 9999;
+        transition: top 0.4s ease, opacity 0.4s ease;
+        opacity: 0;
+        font-size: 15px;
+    }
+    .toast-notification.show {
+        top: 50px;
+        opacity: 1;
+    }
+    .toast-notification.error-toast {
+        background-color: darkred;
+    }
+
+/* == DARKMODE === */
+
+body.dark {
+    background-color: #444;
+    color: #ffffff;
+}
+
+body.dark .hasil,
+body.dark .header,
+body.dark .footer,
+body.dark .form-footer {
+    background-color: #444;
+    color: white;
+    border: none;
+}
+
+body.dark .blue,
+body.dark .red,
+body.dark .form-container,
+body.dark input,
+body.dark select,
+body.dark textarea {
+    background-color: #444;
+    color: white;
+    border: 1px solid #fff7;
+}
+
+body.dark fieldset {
+    border-color: #fff8;
+}
+
+body.dark .task-group {
+    border-bottom: 2px dashed #fff8;
+}
+
+body.dark td,
+body.dark th {
+    border: 1px solid #fff7;
+}
+
+body.dark legend,
+body.dark label,
+body.dark td,
+body.dark p,
+body.dark th,
+body.dark h3 {
+    background-color: #444;
+    color: white;
+}
+
+body.dark table {
+    background-color: #444;
+}
+
+body.dark .btn-header {
+    background-color: #333;
+    color: white;
+}
+
+body.dark .del {
+    background-color: #333;
+    border: 1px solid #fff7;
+}
+
+
+  </style>
+  <title>Document</title>
+</head>
+<body>
+  <div id="toast" class="toast-notification">Data Berhasil Disimpan!</div>
+
+  <div class="hasil">
+    <div class="header">
+      <h3>Laporan Harian</h3>
+      <button id="darkToggle" class="btn-header" title="Mode Gelap">
+            🌙
+        </button>
+        <button class="btn-header" id="btnTambahData">+</button>
+    </div>
+      <div id="tasks-container" class="scroll-area"></div>
+      <div class="footer">© 2026. mastarno-AE</div>
+   </div>
+  
+  <div id="dataModal" class="dialog">
+      <form id="dataForm" novalidate>
+            <div class="form-container">
+                <div class="form-header"><h3>Input Data</h3></div>
+                <div class="form-body">
+                    <input type="hidden" id="dataId">
+                    <fieldset>
+                        <legend>Hari/Tgl</legend>
+                        <div class="form-group">
+                            <label for="hari">Hari</label>
+                            <select id="hari">
+                                <option value="">-- Pilih hari--</option>
+                                <option value="Senin">Senin</option>
+                                <option value="Selasa">Selasa</option>
+                                <option value="Rabu">Rabu</option>
+                                <option value="Kamis">Kamis</option>
+                                <option value="Jum'at">Jum'at</option>
+                                <option value="Sabtu">Sabtu</option>
+                                <option value="Minggu">Minggu</option>  
+                            </select> 
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Tanggal</label>
+                            <input type="date" id="date" />
+                        </div>
+                        <div class="form-group">
+                            <label for="shift">Shift</label>
+                            <select id="shift">
+                                <option value="">-- Pilih Shift--</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+
+                <option value="Long Shift 1">Long Shift 1</option>
+                                <option value="Long Shift 2">Long Shift 2</option>
+                            </select> 
+                        </div>
+             </fieldset>
+
+                    <fieldset>
+                        <legend>YUPI 1</legend>
+                        <div class="form-group"><label>Lolipop</label><input type="text" id="lolipop"></div>
+                        <div class="form-group"><label>Starchless</label><input type="text" id="starchless"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="jumlah"></div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>YUPI 5</legend>
+                        <div class="form-group"><label>Cup Sealer</label><input type="text" id="cupsealer"></div>
+                        <div class="form-group"><label>Sandwich</label><input type="text" id="sandwich"></div>
+                        <div class="form-group"><label>Ishida</label><input type="text" id="ishida"></div>
+                        <div class="form-group"><label>Kawashima</label><input type="text" id="kawashima"></div>
+                        <div class="form-group"><label>PP</label><input type="text" id="pillow"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mpillow"></div>
+                        <div class="form-group"><label>MB</label><input type="text" id="burger"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mburger"></div>
+                        <div class="form-group"><label>Rollete</label><input type="text" id="rollete"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mrollete"></div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>YUPI 3/4</legend>
+                        <div class="form-group"><label>Ishida 1</label><input type="text" id="apem"></div>
+                        <div class="form-group"><label>Ishida 2</label><input type="text" id="brem"></div>
+                        <div class="form-group"><label>Kawashima</label><input type="text" id="cenil"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mcenil"></div>
+                        <div class="form-group"><label>Multipond</label><input type="text" id="cucur"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mcucur"></div>
+                        
+            <div class="form-group"><label>Dippy</label><input type="text" id="dippy"></div>
+                        <div class="form-group"><label>Animal</label><input type="text" id="gethuk"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mgethuk"></div>
+                        <div class="form-group"><label>MB</label><input type="text" id="heci"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mheci"></div>
+                        <div class="form-group"><label>Cup Sealer</label><input type="text" id="jemblem"></div>
+                        <div class="form-group"><label>Berrybonz</label><input type="text" id="klepon"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mklepon"></div>
+                        <div class="form-group"><label>Crunchy</label><input type="text" id="lumpia"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mlumpia"></div>
+                        <div class="form-group"><label>PP</label><input type="text" id="wajik"></div>
+                        <div class="form-group"><label>Jumlah</label><input type="number" id="mwajik"></div>
+                    </fieldset>
+
+                    <div class="rinci">
+                        <label class="uraian">Kerusakan</label>
+                        <textarea id="uraian" class="textarea" rows="5"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <p class="author">© 2026. mastarno-AE</p>
+                    <button type="button" class="red" id="close-form-btn">Batal</button>
+                    <button type="submit" class="blue" id="submit-button">Simpan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+  </div>
+  
+  <div id="deleteModal" class="dialog">
+        <div class="del">
+            <h3 class="takon">Konfirmasi Hapus</h3>
+            <p>Apakah Anda yakin ingin menghapus data ini?</p>
+            <div class="hps">
+                <button id="cancelDelete" class="blue">Batal</button>
+                <button id="confirmDelete" class="red">Hapus</button>
+            </div>
+        </div>
+    </div>
+  
+  <script>
+    const dataModal = document.getElementById("dataModal");
+    const dataForm = document.getElementById("dataForm");
+    const btnTambahData = document.getElementById("btnTambahData");
+    const closeFormBtn = document.getElementById("close-form-btn");
+    const tasksContainer = document.getElementById("tasks-container");
+    const toast = document.getElementById("toast");
+    
+    const shortcutMap = {
+        a: ["Animal", "Appeton", "Apple ring", "Aquarium"],
+        b: ["Baby Shark", "Bear", "Berrybonz"],
+        c: ["Calci Bean", "CDZ", "Chocoo Glee", "Chop chop", "Chiby", "Chupa Chup", "Cola", "Cola bonz", "Cola Burger", "Cookies", "Cooktail", "Confetty kiss", "Crunchy Gummies"],
+        d: ["Dippy"], 
+        e: ["Exotic Mango", "Expert boost"], 
+        f: ["Fruit bites", "Frunkfuter", "Fun Gum"],
+        g: ["Grape", "Gummy Bear", "Gummy Fang", "Gummy Fries"], 
+        h: ["Happy Bear 120 gr"], 
+        i: ["Iced Cola", "Inaco"],
+        j: ["JFF", "Jungle Fun"], 
+        k: ["Krabby Patties", "Krabby Patties 72 gr", "Kuai kuai"],
+        l: ["Little Star"], 
+        m: ["MB Max", "MB Yupi", "MB Yupi 500gr", "Milly Moose", "Milk Shake", "Mini Monz", "My Watch"],
+        n: ["Neon Stix", "Neon Stix 120 gr", "Noodle"], 
+        o: ["OFF", "Orange"],
+        p: ["Party Mix", "Pastilles", "Pizza", "Puzzle"], 
+        q: ["QQ"], 
+        r: ["Raspberry & Blackberry"],
+        s: ["Sandwich", "Sour Giant Cola 500 gr", "Sour O Ring", "Sea World", "Starlite", "St kiss", "St kiss 45 gr", "St kiss 120 gr", "Sweet Heart"],
+        t: ["TJ Joybee", "Tropical"], 
+        v: ["Vicee", "Vidoran", "Vitaminis", "Vita C Gummies"],
+        w: ["Water Melon", "Worm"], 
+        y: ["Yoghurt", "Youvit"]
+    };
+
+    // Fungsi Pembantu untuk Memunculkan Notifikasi
+    const showToast = (message, isError = false) => {
+        toast.textContent = message;
+        if (isError) {
+            toast.classList.add("error-toast");
+        } else {
+            toast.classList.remove("error-toast");
+        }
+        toast.classList.add("show");
+        
+        // Sembunyikan otomatis setelah 3 detik
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 3000);
+    };
+
+    const setupAutocomplete = (input) => {
+        let suggestionBox = document.createElement("div");
+        suggestionBox.className = "custom-autocomplete-list";
+        input.parentNode.appendChild(suggestionBox);
+        input.addEventListener('input', () => {
+            const fullVal = input.value;
+            const parts = fullVal.split(','); 
+            const lastPart = parts[parts.length - 1].trim().toLowerCase(); 
+            if (lastPart.length === 0) { suggestionBox.style.display = "none"; return; }
+            if (lastPart.length === 1 && shortcutMap[lastPart]) {
+                suggestionBox.innerHTML = "";
+                suggestionBox.style.display = "block";
+                shortcutMap[lastPart].forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "custom-autocomplete-item";
+                    div.textContent = item;
+                    div.onclick = (e) => {
+                        e.preventDefault();
+                        const prefix = parts.slice(0, -1).join(',');
+                        input.value = prefix ? `${prefix}, ${item}` : item;
+                        suggestionBox.style.display = "none";
+                        input.focus();
+                    };
+                    suggestionBox.appendChild(div);
+                });
+            } else { suggestionBox.style.display = "none"; }
+        });
+        document.addEventListener("click", (e) => { if (e.target !== input) suggestionBox.style.display = "none"; });
+    };
+
+    const statusInputs = ["lolipop", "starchless", "cupsealer",  "sandwich", "ishida", "kawashima", "pillow", "burger", "rollete", "apem", "brem", "cenil", "cucur", "dippy", "gethuk", "heci", "jemblem", "klepon", "lumpia", "wajik"];
+    statusInputs.forEach(id => { const el = document.getElementById(id); if (el) setupAutocomplete(el); });
+
+    let taskData = JSON.parse(localStorage.getItem("data")) || [];
+
+    const updateTaskContainer = () => {
+    tasksContainer.innerHTML = "";
+    taskData.forEach((task) => {
+        const groupWrapper = document.createElement("div");
+        groupWrapper.className = "task-group";
+        
+        groupWrapper.innerHTML = `
+            <div class="header-info">
+                <table class="info-table">
+                    <tr>
+                        <td>Hari / Tgl</td>
+                        <td>:</td>
+                        <td>${formatTanggalIndonesia(task.date)}</td>
+                    </tr>
+                    <tr>
+                        <td>Shift</td>
+                        <td>:</td>
+                        <td>${task.shift}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <table class="main-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Nama Mesin</th>
+                        <th style="width: 50%;">Nama Produk</th>
+                        <th style="width: 20%;">Jumlah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="category-row"><td colspan="3">YUPI 1</td></tr>
+                    <tr><td>Lolipop</td><td>${task.lolipop}</td><td></td></tr>
+                    <tr><td>Starchless</td><td>${task.starchless}</td><td>${task.jumlah}</td></tr>
+                    
+                    <tr class="category-row"><td colspan="3">YUPI 5</td></tr>
+                    <tr><td>Cup Sealer</td><td>${task.cupsealer}</td><td></td></tr>
+                    <tr><td>Sandwich</td><td>${task.sandwich}</td><td></td></tr>
+                    <tr><td>Ishida</td><td>${task.ishida}</td><td></td></tr>
+                    <tr><td>Kawashima</td><td>${task.kawashima}</td><td></td></tr>
+                    <tr><td>PP</td><td>${task.pillow}</td><td>${task.mpillow}</td></tr>
+                    <tr><td>MB</td><td>${task.burger}</td><td>${task.mburger}</td></tr>
+                    <tr><td>Rollete</td><td>${task.rollete}</td><td>${task.mrollete}</td></tr>
+                    
+                    <tr class="category-row"><td colspan="3">YUPI 3 / 4</td></tr>
+                    <tr><td>Ishida 1</td><td>${task.apem}</td><td></td></tr>
+                    <tr><td>Ishida 2</td><td>${task.brem}</td><td></td></tr>
+                    <tr><td>Kawashima</td><td>${task.cenil}</td><td>${task.mcenil}</td></tr>
+                    <tr><td>Multipond</td><td>${task.cucur}</td><td>${task.mcucur}</td></tr>
+                    <tr><td>Dippy</td><td>${task.dippy}</td><td></td></tr>
+                    <tr><td>Animal</td><td>${task.gethuk}</td><td>${task.mgethuk}</td></tr>
+                    <tr><td>MB</td><td>${task.heci}</td><td>${task.mheci}</td></tr>
+                    <tr><td>Cup Sealer</td><td>${task.jemblem}</td><td></td></tr>
+                    <tr><td>Berrybonz</td><td>${task.klepon}</td><td>${task.mklepon}</td></tr>
+                    <tr><td>Crunchy</td><td>${task.lumpia}</td><td>${task.mlumpia}</td></tr>
+                    <tr><td>PP</td><td>${task.wajik}</td><td>${task.mwajik}</td></tr>
+                    <tr class="category-row"><td colspan="3">KERUSAKAN</td></tr>
+<tr>
+    <td colspan="3" style="min-height: 60px; vertical-align: top; padding: 10px; white-space: pre-wrap; word-break: break-word; line-height: 1.5;">${task.uraian || "Tidak ada kerusakan"}</td>
+</tr>
+                </tbody>
+            </table>
+            
+            <div class="task-actions">
+                <button onclick="editTask('${task.id}')" class="blue">Edit</button>
+                <button onclick="deleteTask('${task.id}')" class="red">Hapus</button>
+            </div>
+        `;
+        tasksContainer.appendChild(groupWrapper);
+    });
+};
+
+    function formatTanggalIndonesia(dateStr) {
+    if (!dateStr) return "";
+    const dateObj = new Date(dateStr);
+
+    return new Intl.DateTimeFormat("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    }).format(dateObj);
+}
+
+
+    // Fungsi operasional data tetap sama
+    const addOrUpdateTask = () => {
+        const id = document.getElementById("dataId").value || "id-" + Date.now();
+        const isEdit = document.getElementById("dataId").value !== ""; // Cek apakah sedang edit data atau buat baru
+        
+        const taskObj = {
+            id,
+            hari: document.getElementById("hari").value,
+            date: document.getElementById("date").value,
+            shift: document.getElementById("shift").value,
+            lolipop: document.getElementById("lolipop").value,
+            starchless: document.getElementById("starchless").value,
+            jumlah: document.getElementById("jumlah").value,
+            cupsealer: document.getElementById("cupsealer").value,
+            sandwich: document.getElementById("sandwich").value,
+            ishida: document.getElementById("ishida").value,
+            kawashima: document.getElementById("kawashima").value,
+            pillow: document.getElementById("pillow").value,
+            mpillow: document.getElementById("mpillow").value,
+            burger: document.getElementById("burger").value,
+            mburger: document.getElementById("mburger").value,
+            rollete: document.getElementById("rollete").value,
+            mrollete: document.getElementById("mrollete").value,
+            apem: document.getElementById("apem").value,
+            brem: document.getElementById("brem").value,
+            cenil: document.getElementById("cenil").value,
+            mcenil: document.getElementById("mcenil").value,
+            cucur: document.getElementById("cucur").value,
+            mcucur: document.getElementById("mcucur").value,
+            dippy: document.getElementById("dippy").value,
+            gethuk: document.getElementById("gethuk").value,
+            mgethuk: document.getElementById("mgethuk").value,
+            heci: document.getElementById("heci").value,
+            mheci: document.getElementById("mheci").value,
+            jemblem: document.getElementById("jemblem").value,
+            klepon: document.getElementById("klepon").value,
+            mklepon: document.getElementById("mklepon").value,
+            lumpia: document.getElementById("lumpia").value,
+            mlumpia: document.getElementById("mlumpia").value,
+            wajik: document.getElementById("wajik").value,
+            mwajik: document.getElementById("mwajik").value,
+            uraian: document.getElementById("uraian").value
+        };
+        const idx = taskData.findIndex(d => d.id === id);
+        if (idx === -1) taskData.unshift(taskObj); else taskData[idx] = taskObj;
+        localStorage.setItem("data", JSON.stringify(taskData));
+// Kirim ke Google Sheet
+if (!isEdit) {
+    fetch("https://script.google.com/macros/s/AKfycbylK_Hisif5-04tQU4dCNH6dZzB-qSIjYFVY4dBAxutx4AcAmU25bniEPzZHYyjhCBk7A/exec", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(taskObj)
+    })
+    .then(res => res.text())
+    .then(res => {
+        console.log("Tersimpan ke Google Sheet", res);
+    })
+    .catch(err => {
+        console.error("Gagal kirim ke Sheet", err);
+        showToast("❌ Gagal kirim ke Google Sheet", true);
+    });
+}
+        updateTaskContainer();
+        closeModal();
+        
+        // Picu notifikasi sukses simpan / edit
+        if (isEdit) {
+            showToast("✏️ Data Berhasil Diperbarui!");
+        } else {
+            showToast("✅ Data Berhasil Disimpan!");
+        }
+    };
+
+    window.editTask = (id) => {
+        const t = taskData.find(i => i.id === id);
+        if (!t) return;
+        document.getElementById("dataId").value = t.id;
+        document.getElementById("hari").value = t.hari;
+        document.getElementById("date").value = t.date;
+        document.getElementById("shift").value = t.shift;
+        document.getElementById("lolipop").value = t.lolipop;
+        document.getElementById("starchless").value = t.starchless;
+        document.getElementById("jumlah").value = t.jumlah;
+        document.getElementById("cupsealer").value = t.cupsealer;
+        document.getElementById("sandwich").value = t.sandwich;
+        document.getElementById("ishida").value = t.ishida;
+        document.getElementById("kawashima").value = t.kawashima;
+        document.getElementById("pillow").value = t.pillow;
+        document.getElementById("mpillow").value = t.mpillow;
+        document.getElementById("burger").value = t.burger;
+        document.getElementById("mburger").value = t.mburger;
+        document.getElementById("rollete").value = t.rollete;
+        document.getElementById("mrollete").value = t.mrollete;
+        document.getElementById("apem").value = t.apem;
+        document.getElementById("brem").value = t.brem;
+        document.getElementById("cenil").value = t.cenil;
+        document.getElementById("mcenil").value = t.mcenil;
+        document.getElementById("cucur").value = t.cucur;
+        document.getElementById("mcucur").value = t.mcucur;
+        document.getElementById("dippy").value = t.dippy;
+        document.getElementById("gethuk").value = t.gethuk;
+        document.getElementById("mgethuk").value = t.mgethuk;
+        document.getElementById("heci").value = t.heci;
+        document.getElementById("mheci").value = t.mheci;
+        document.getElementById("jemblem").value = t.jemblem;
+        document.getElementById("klepon").value = t.klepon;
+        document.getElementById("mklepon").value = t.mklepon;
+        document.getElementById("lumpia").value = t.lumpia;
+        document.getElementById("mlumpia").value = t.mlumpia;
+        document.getElementById("wajik").value = t.wajik;
+        document.getElementById("mwajik").value = t.mwajik;
+        document.getElementById("uraian").value = t.uraian;
+        dataModal.classList.add("show");
+    };
+
+    let taskIdToDelete = ""; // Memastikan variabel ini terdefinisi secara global
+    window.deleteTask = (id) => { taskIdToDelete = id; document.getElementById("deleteModal").classList.add("show"); };
+    document.getElementById("confirmDelete").onclick = () => {
+        taskData = taskData.filter(i => i.id !== taskIdToDelete);
+        localStorage.setItem("data", JSON.stringify(taskData));
+        updateTaskContainer();
+        document.getElementById("deleteModal").classList.remove("show");
+        
+        // Picu notifikasi hapus data (dengan warna merah)
+        showToast("🗑️ Data Berhasil Dihapus!", true);
+    };
+    document.getElementById("cancelDelete").onclick = () => document.getElementById("deleteModal").classList.remove("show");
+
+    const closeModal = () => { dataForm.reset(); document.getElementById("dataId").value = ""; dataModal.classList.remove("show"); };
+    btnTambahData.onclick = () => { closeModal(); dataModal.classList.add("show"); };
+    closeFormBtn.onclick = closeModal;
+    dataForm.onsubmit = (e) => { e.preventDefault(); addOrUpdateTask(); };
+
+    if (taskData.length) updateTaskContainer();
+// ================= DARK MODE TOGGLE =================
+const darkToggle = document.getElementById("darkToggle");
+
+function setDarkMode(isDark) {
+    document.body.classList.toggle("dark", isDark);
+    localStorage.setItem("darkMode", isDark ? "1" : "0");
+    darkToggle.textContent = isDark ? "☀️" : "🌙";
+}
+
+// Load status saat halaman dibuka
+const savedDark = localStorage.getItem("darkMode") === "1";
+setDarkMode(savedDark);
+
+// Toggle klik
+darkToggle.onclick = () => {
+    const isDark = !document.body.classList.contains("dark");
+    setDarkMode(isDark);
+};
+
+</script>
+</body>
+</html>
