@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Laporan</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: aliceblue; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    
+    .form-container {
+        width: 96%;
+        max-width: 500px;
+        height: 80vh;
+        background-color: #ffffff;
+        border: 1px solid #0003;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .header {
+        background: #00796B;
+        color: white;
+        height: 70px;
+        justify-content: center;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+        position: relative;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    #btnBack { 
+        background: none; 
+        border: none; 
+        color: white; 
+        font-size: 28px; 
+        cursor: pointer; 
+        position: absolute;
+        left: 15px;
+        top: 50%; 
+        transform: translateY(-50%);
+        z-index: 10;
+        display: none;
+    }
+    
+    .menu-laporan {
+        padding: 20px;
+        display: flex;
+        flex-direction: column; 
+        gap: 20px;
+    }    
+    .menu-laporan button {
+        border: 1px solid #ccc;
+        background-color: #fff;
+        padding: 15px;
+        cursor: pointer;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+    }  
+    
+    /*--- Form Induk--*/
+    .form-body {
+        display: block;
+        flex: 1 1 auto; 
+        padding: 15px; 
+        overflow-y: auto;
+        min-height: 0;
+    }
+    
+    /*--- Form Laporan harian--*/
+    .judul-input{
+        background-color: #368BC1;
+        border-radius: 3px;
+        color: white;
+        padding: 10px;
+        display:flex;
+        font-weight:bold;
+        margin-bottom:10px;
+    }
+    
+    .judul-input span:nth-child(1){
+        width:130px;
+    }
+    
+    .judul-input span:nth-child(2),
+    .judul-input span:nth-child(3){
+        flex:1;
+        text-align:center;
+    }
+    
+    .form-row{
+        display:flex;
+        align-items:center;
+        gap:5px;
+    }
+    
+    .machine-name{
+        width:130px;
+        margin-bottom:0;
+    }
+    
+    .machine-name label{
+        margin:0;
+        font-weight:bold;
+    }
+    
+    .input-box{
+        flex:1;
+        margin-bottom:0;
+    }
+    
+    /*--- Form Maintenace--*/
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; margin-bottom: 3px; font-weight: 600; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        background-color: #fff;
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #0007;
+        border-radius: 3px;
+    }
+    
+    .form-footer { background-color: #fff; padding: 16px; border-top: 1px solid #e9ecef; flex-shrink: 0; }
+    .btn-submit, .btn-main { width: 100%; background-color: #27ae60; color: white; border: none; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    .sub { font-size: 18px; font-weight: bold; }
+    
+    /*--- Halaman Tampilkan Data ---*/
+    .filter-section {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .filter-section select {
+        flex: 1;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        white-space: nowrap;
+    }
+    th {
+        background-color: #00796B;
+        color: white;
+        position: sticky;
+        top: 0;
+    }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .loading-text { text-align: center; font-weight: bold; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <div class="header" id="mainHeader">
+      <button type="button" id="btnBack" onclick="kembaliMenu()">🏠</button>
+      <span id="headerTitle">Laporan Teknik Packing</span>
+    </div>
+
+    <div class="menu-laporan" id="menuLaporan">
+      <button type="button" id="btnProduksi" class="sub" onclick="showProduksi()">Laporan Harian</button>
+      <button type="button" id="btnMaintenance" class="sub" onclick="showMaintenance()">Maintenance/Kerusakan</button>
+      <button type="button" id="btnLihatData" class="sub" style="background-color: #e0f2f1; color: #004d40;" onclick="showDataPage()">📊 Lihat Data Laporan</button>
+    </div>
+
+    <form id="formProduksi" style="display:none; flex-direction: column; height: 100%; overflow: hidden;">
+      <div class="form-body">
+        <div class="form-group"><label>Tanggal</label><input type="number" id="tanggal" placeholder="1-31"></div>
+        <div class="form-group"><label>Shift</label><select id="shift">
+            <option value="">Pilih</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select></div>
+        <div class="form-group"><label>Supervisor</label><select id="supervisor"></select></div>
+        <div class="judul-input"><span>Mesin</span>
+          <span>Running</span>
+          <span>Breakdown</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Starchless</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="starchless" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdStarchless" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Hassia</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="hassia" placeholder="Jalan">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Kawashima Y3</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="kawashima" placeholder="Jalan">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Multipond</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="multipond" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdMultipond" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>PP Y3</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="pp" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdPP" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Crunchy</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="crunchy" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdCrunchy" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Animal</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="animal" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdAnimal" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Zugi</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="zugi" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdZugi" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Dippy</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="dippy" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdDippy" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Animal L2</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="animal2" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdAnimal2" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Noodle</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="noodle" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdNoodle" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Berrybonz</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="berrybonz" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdBerrybonz" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>G. Fries Y4</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="fries" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdFries" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>MB Y4</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="mb" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdMB" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>My Watch</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="mywatch" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdMyWatch" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Ishida Y5</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="ishida" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdIshida" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Cup Sealer</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="cupsealer" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdCupSealer" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>Rollete</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="rollete" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdRollete" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>PP Y5</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="pp5" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdPP5" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>MB Y5</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="mb5" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdMB5" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>MB 35 Gr</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="mb35" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdMB35" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>MB Max</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="max" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdMax" placeholder="break">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group machine-name">
+            <label>G. Fries Y5</label>
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="gfries" placeholder="Jalan">
+          </div>
+          <div class="form-group input-box">
+            <input type="number" id="bdGFries" placeholder="break">
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-submit" id="submitBtn">Simpan</button>
+      </div>
+    </form>
+
+    <form id="formMaintenance" style="display:none; flex-direction: column; height: 100%;">
+      <div class="form-body">
+        <div class="form-group"><label>Tanggal</label><input type="date" id="mtTanggal"></div>
+        <div class="form-group"><label>Shift</label><select id="mtShift">
+            <option value="">Pilih Shift</option>
+            <option value="1">Shift 1</option>
+            <option value="2">Shift 2</option>
+            <option value="3">Shift 3</option>
+          </select></div>
+        <div class="form-group"><label>Area</label><select id="mtArea">
+            <option value="">Pilih area</option>
+            <option value="YUPI 1">YUPI 1</option>
+            <option value="YUPI 3">YUPI 3</option>
+            <option value="YUPI 4">YUPI 4</option>
+            <option value="YUPI 5">YUPI 5</option>
+          </select></div>
+        <div class="form-group"><label>Mesin</label><input type="text" id="mtMesin"></div>
+        <div class="form-group"><label>Remark</label><textarea id="mtRemark"></textarea></div>
+        <div class="form-group"><label>Supervisor</label><select id="mtSupervisor"></select></div>
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-main" id="btnMainSubmit">Simpan</button>
+      </div>
+    </form>
+
+    <div id="pageData" style="display:none; flex-direction:column; padding:15px; gap:10px; overflow-y:auto; height:100%;">
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+            <select id="filterBulan" onchange="loadDataFromServer()" style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+            </select>
+            
+            <select id="filterTahun" onchange="loadDataFromServer()" style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                </select>
+        </div>
+
+        <select id="filterJenis" onchange="loadDataFromServer()" style="padding:8px; border-radius:5px; border:1px solid #ccc; font-weight:bold;">
+            <option value="produksi">Laporan Produksi Harian</option>
+            <option value="maintenance">Laporan Maintenance</option>
+        </select>
+        
+        <div style="flex:1; overflow:auto; border:1px solid #ccc; border-radius:5px; background:#fff;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                <thead id="tableHeader"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+      <div class="filter-section">
+        <select id="filterJenis" onchange="loadDataFromServer()">
+          <option value="produksi">Data Laporan Harian</option>
+          <option value="maintenance">Data Maintenance</option>
+        </select>
+      </div>
+
+      <div class="table-responsive" style="flex: 1; overflow: auto;">
+        <table id="tabelLaporan">
+          <thead id="tableHeader"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLHhHhibtR9okOI27Bdp_4UROLkgKRQjIuXhe552IFfocCX-kZo7iteD_NT5p-XG0/exec";
+    const daftarSupervisor = ["Ruslan Budi", "Sutarno", "Sudirman", "Saepudin"];
+    
+    // Variabel Global Baru untuk manajemen mode Edit
+    let isEditMode = false;
+    let editIdMaint = null; // Menyimpan No ID Maintenance yang diedit
+    let currentSheetName = ""; // Menyimpan info nama sheet aktif dari server
+    let currentBulanAngka = "";
+    let currentTahunAngka = "";
+
+    function showProduksi(){
+        document.getElementById("formProduksi").style.display="flex";
+        document.getElementById("menuLaporan").style.display="none";
+        document.getElementById("btnBack").style.display="block";
+        if(!isEditMode) {
+            document.getElementById("headerTitle").innerHTML="Form Laporan Harian";
+            document.getElementById("submitBtn").textContent = "Simpan";
+            document.getElementById("tanggal").disabled = false;
+            document.getElementById("shift").disabled = false;
+        } else {
+            document.getElementById("headerTitle").innerHTML="Edit Laporan Harian";
+            document.getElementById("submitBtn").textContent = "Update Data";
+            document.getElementById("tanggal").disabled = true; // Kunci kunci primer agar tidak merusak koordinat sel
+            document.getElementById("shift").disabled = true;
+        }
+    }
+    
+    function showMaintenance(){
+        document.getElementById("formMaintenance").style.display="flex";
+        document.getElementById("menuLaporan").style.display="none";
+        document.getElementById("btnBack").style.display="block";
+        if(!isEditMode) {
+            document.getElementById("headerTitle").innerHTML="Form Maintenance";
+            document.getElementById("btnMainSubmit").textContent = "Simpan";
+            document.getElementById("mtTanggal").disabled = false;
+            document.getElementById("mtShift").disabled = false;
+        } else {
+            document.getElementById("headerTitle").innerHTML="Edit Data Maintenance";
+            document.getElementById("btnMainSubmit").textContent = "Update Data";
+            document.getElementById("mtTanggal").disabled = true;
+            document.getElementById("mtShift").disabled = true;
+        }
+    }
+    
+    function showDataPage() {
+        document.getElementById("pageData").style.display="flex";
+        document.getElementById("menuLaporan").style.display="none";
+        document.getElementById("btnBack").style.display="block";
+        document.getElementById("headerTitle").innerHTML="Data Isian Laporan";
+        
+        // Inisialisasi isi Dropdown Tahun (Menampilkan tahun ini, 1 tahun lalu, dan 1 tahun ke depan)
+        const d = new Date();
+        const thnSelect = document.getElementById("filterTahun");
+        if (thnSelect.options.length === 0) { // Biar tidak append terus menerus tiap dibuka
+            const thnSekarang = d.getFullYear();
+            for (let i = thnSekarang - 2; i <= thnSekarang + 1; i++) {
+                const opt = document.createElement("option");
+                opt.value = i;
+                opt.innerText = i;
+                if (i === thnSekarang) opt.selected = true;
+                thnSelect.appendChild(opt);
+            }
+            // Set default bulan ke bulan saat ini
+            document.getElementById("filterBulan").value = d.getMonth() + 1;
+        }
+
+        loadDataFromServer();
+    }
+    
+    function kembaliMenu(){
+        document.getElementById("formProduksi").style.display="none";
+        document.getElementById("formMaintenance").style.display="none";
+        document.getElementById("pageData").style.display="none";
+        document.getElementById("menuLaporan").style.display="flex";
+        document.getElementById("btnBack").style.display="none";
+        document.getElementById("headerTitle").innerHTML="Laporan Teknik Packing";
+        
+        // Reset state edit ketika kembali ke menu utama
+        isEditMode = false;
+        editIdMaint = null;
+        document.getElementById("formProduksi").reset();
+        document.getElementById("formMaintenance").reset();
+        isiSupervisor();
+    }
+        
+    function isiSupervisor(){
+        const produksi = document.getElementById("supervisor");
+        const maintenance = document.getElementById("mtSupervisor");
+    
+        produksi.innerHTML = '<option value="">-- Pilih Supervisor --</option>';
+        maintenance.innerHTML = '<option value="">-- Pilih Supervisor --</option>';
+    
+        daftarSupervisor.forEach(function(nama){
+            produksi.innerHTML += `<option value="${nama}">${nama}</option>`;
+            maintenance.innerHTML += `<option value="${nama}">${nama}</option>`;
+        });
+    }
+    
+    // AMBIL DATA DARI SERVER (DENGAN FILTER BULAN & TAHUN)
+    async function loadDataFromServer() {
+        const jenis = document.getElementById("filterJenis").value;
+        const bulan = document.getElementById("filterBulan").value;
+        const tahun = document.getElementById("filterTahun").value;
+        
+        const tBody = document.getElementById("tableBody");
+        const tHeader = document.getElementById("tableHeader");
+        
+        tHeader.innerHTML = "";
+        tBody.innerHTML = `<tr><td class="loading-text">Memuat data...</td></tr>`;
+        
+        try {
+            // Kirim parameter tambahan &bulan=...&tahun=... ke Web App URL
+            const response = await fetch(`${WEB_APP_URL}?jenis=${jenis}&bulan=${bulan}&tahun=${tahun}`);
+            const result = await response.json();
+            
+            if (!result.success || !result.data || result.data.length === 0) {
+                tBody.innerHTML = `<tr><td class="loading-text">Tidak ada data ditemukan untuk bulan & tahun ini.</td></tr>`;
+                return;
+            }
+            
+            const rawData = result.data;
+            tBody.innerHTML = ""; 
+
+            // Simpan info bulan & tahun aktif yang dipilih oleh user untuk kebutuhan edit data
+            const bIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            currentSheetName = bIndo[Number(bulan) - 1] + ' ' + tahun;
+            currentBulanAngka = bulan;
+            currentTahunAngka = tahun;
+    
+            if (jenis === "produksi") {
+                const tanggalCounts = {};
+                rawData.forEach(row => {
+                    let tgl = row[4] !== undefined ? String(row[4]) : "-";
+                    if (tgl.includes("/")) {
+                        tgl = tgl.split(" ")[0].split("/")[0];
+                    }
+                    tanggalCounts[tgl] = (tanggalCounts[tgl] || 0) + 1;
+                });
+
+                const skemaProduksi = [
+                    { label: "AKSI", key: "aksi", type: "action" },
+                    { label: "TANGGAL", key: "tanggal", type: "meta", indexCol: 4 },
+                    { label: "SHIFT", key: "shift", type: "meta", indexCol: 5 },
+                    { label: "SUPERVISOR", key: "supervisor", type: "meta", indexCol: 2 },
+                    { label: "STARCHLESS", key: "starchless", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdStarchless", type: "breakdown" },
+                    { label: "HASSIA", key: "hassia", type: "mesin" },
+                    { label: "KAWASHIMA Y3", key: "kawashima", type: "mesin" },
+                    { label: "MULTIPOND", key: "multipond", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdMultipond", type: "breakdown" },
+                    { label: "PP Y3", key: "pp", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdPP", type: "breakdown" },
+                    { label: "CRUNCHY", key: "crunchy", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdCrunchy", type: "breakdown" },
+                    { label: "ANIMAL", key: "animal", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdAnimal", type: "breakdown" },
+                    { label: "ZUGI", key: "zugi", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdZugi", type: "breakdown" },
+                    { label: "DIPPY", key: "dippy", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdDippy", type: "breakdown" },
+                    { label: "ANIMAL L2", key: "animal2", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdAnimal2", type: "breakdown" },
+                    { label: "NOODLE", key: "noodle", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdNoodle", type: "breakdown" },
+                    { label: "BERRYBONZ", key: "berrybonz", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdBerrybonz", type: "breakdown" },
+                    { label: "G. FRIES Y4", key: "fries", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdFries", type: "breakdown" },
+                    { label: "MB Y4", key: "mb", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdMB", type: "breakdown" },
+                    { label: "MY WATCH", key: "mywatch", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdMyWatch", type: "breakdown" },
+                    { label: "ISHIDA Y5", key: "ishida", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdIshida", type: "breakdown" },
+                    { label: "CUP SEALER", key: "cupsealer", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdCupSealer", type: "breakdown" },
+                    { label: "ROLLETE", key: "rollete", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdRollete", type: "breakdown" },
+                    { label: "PP Y5", key: "pp5", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdPP5", type: "breakdown" },
+                    { label: "MB Y5", key: "mb5", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdMB5", type: "breakdown" },
+                    { label: "MB 35 GR", key: "mb35", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdMB35", type: "breakdown" },
+                    { label: "MB MAX", key: "max", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdMax", type: "breakdown" },
+                    { label: "G. FRIES Y5", key: "gfries", type: "mesin" },
+                    { label: "BREAKDOWN", key: "bdGFries", type: "breakdown" }
+                ];
+
+                skemaProduksi.forEach(item => {
+                    const tr = document.createElement("tr");
+                    const th = document.createElement("th");
+                    th.innerText = item.label;
+                    th.style.backgroundColor = "#00796B";
+                    th.style.color = "white";
+                    th.style.width = "90px";
+                    th.style.position = "sticky";
+                    th.style.left = "0";
+                    th.style.zIndex = "2";
+                    tr.appendChild(th);
+
+                    let sisaColspan = 0; 
+
+                    rawData.forEach((row, rIdx) => {
+                        let nilaiMeta = row[item.indexCol] !== undefined ? String(row[item.indexCol]) : "-";
+                        let tglSaja = row[4] !== undefined ? String(row[4]) : "-";
+                        if (tglSaja.includes("/")) {
+                            tglSaja = tglSaja.split(" ")[0].split("/")[0];
+                        }
+
+                        if (item.type === "action") {
+                            const td = document.createElement("td");
+                            td.style.border = "1px solid #0007";
+                            td.style.padding = "5px";
+                            td.style.textAlign = "center";
+                            
+                            const btnEdit = document.createElement("button");
+                            btnEdit.innerHTML = "✏️ Edit";
+                            btnEdit.style.cursor = "pointer";
+                            btnEdit.style.padding = "2px 6px";
+                            btnEdit.style.fontSize = "11px";
+                            btnEdit.onclick = () => pemicuEditProduksi(rawData, rIdx);
+                            
+                            td.appendChild(btnEdit);
+                            tr.appendChild(td);
+                        } else if (item.label === "TANGGAL") {
+                            if (sisaColspan === 0) {
+                                const td = document.createElement("td");
+                                td.style.border = "1px solid #0007";
+                                td.style.padding = "10px";
+                                td.style.textAlign = "center";
+                                td.style.fontWeight = "bold";
+                                td.style.backgroundColor = "#e0f2f1"; 
+                                
+                                if (nilaiMeta.includes("/")) {
+                                    nilaiMeta = nilaiMeta.split(" ")[0].split("/")[0];
+                                }
+                                td.innerText = nilaiMeta;
+
+                                const spanCount = tanggalCounts[tglSaja] || 1;
+                                td.setAttribute("colspan", spanCount);
+                                tr.appendChild(td);
+                                
+                                sisaColspan = spanCount - 1;
+                            } else {
+                                sisaColspan--;
+                            }
+                        } else {
+                            const td = document.createElement("td");
+                            td.style.border = "1px solid #0007";
+                            td.style.padding = "10px";
+                            td.style.textAlign = "center";
+
+                            if (item.type === "meta") {
+                                td.innerText = nilaiMeta;
+                            } else {
+                                const logString = (item.type === "mesin") ? (row[6] || "-") : (row[7] || "-");
+                                td.innerText = ambilNilaiDariLog(logString, item.key);
+                            }
+                            tr.appendChild(td);
+                        }
+                    });
+                    tBody.appendChild(tr);
+                });
+    
+            } else {
+                const headers = ["AKSI", "NO", "TANGGAL", "SHIFT", "AREA", "MESIN", "REMARK", "SUPERVISOR"];
+                tHeader.innerHTML = `<tr>${headers.map(h => `<th style="background-color: #00796B; color: white; padding: 10px; position: sticky; top: 0;">${h}</th>`).join("")}</tr>`;
+                
+                rawData.forEach(row => {
+                    if(row.length === 0 || row[0] === "") return;
+                    
+                    const tr = document.createElement("tr");
+                    let tdAction = `<td style="border:1px solid #ddd; padding:5px; text-align:center;">
+                        <button style="cursor:pointer; padding:2px 6px; font-size:11px;" onclick="pemicuEditMaintenance('${row[0]}','${row[1]}','${row[2]}','${row[3]}','${row[4]}','${row[5]}','${row[6]}')">✏️ Edit</button>
+                    </td>`;
+                    
+                    let tdContent = `
+                        <td style="border:1px solid #ddd; padding:10px; text-align:center;">${row[0] || '-'}</td>
+                        <td style="border:1px solid #ddd; padding:10px; text-align:center;">${row[1] || '-'}</td>
+                        <td style="border:1px solid #ddd; padding:10px; text-align:center;">${row[2] || '-'}</td>
+                        <td style="border:1px solid #ddd; padding:10px;">${row[3] || '-'}</td>
+                        <td style="border:1px solid #ddd; padding:10px;">${row[4] || '-'}</td>
+                        <td style="border:1px solid #ddd; padding:10px;">${row[5] || '-'}</td>
+                        <td style="border:1px solid #ddd; padding:10px;">${row[6] || '-'}</td>
+                    `;
+                    tr.innerHTML = tdAction + tdContent;
+                    tBody.appendChild(tr);
+                });
+            }
+            
+        } catch (err) {
+            console.error(err);
+            tBody.innerHTML = `<tr><td class="loading-text" style="color:red;">Gagal mengambil data dari server</td></tr>`;
+        }
+    }
+    
+    function ambilNilaiDariLog(logString, key) {
+        if (!logString || logString === "-") return "";
+        const pasangan = logString.split(", ");
+        for (let i = 0; i < pasangan.length; i++) {
+            const part = pasangan[i].split(":");
+            if (part[0].trim() === key) {
+                return part[1] ? part[1].trim() : "";
+            }
+        }
+        return "";
+    }
+
+    // ==========================================
+    // PARSING DATA LAMA MASUK KE FORM INPUT
+    // ==========================================
+    function pemicuEditProduksi(rawData, rowIndex) {
+        isEditMode = true;
+        const row = rawData[rowIndex];
+        
+        document.getElementById("pageData").style.display = "none";
+        showProduksi();
+
+        // Isi field Meta
+        document.getElementById("tanggal").value = row[4];
+        document.getElementById("shift").value = row[5];
+        document.getElementById("supervisor").value = row[2] === "-" ? "" : row[2];
+
+        // List id elemen input di form produksi Anda
+        const keys = [
+            "starchless", "bdStarchless", "hassia", "kawashima", "multipond", "bdMultipond",
+            "pp", "bdPP", "crunchy", "bdCrunchy", "animal", "bdAnimal", "zugi", "bdZugi",
+            "dippy", "bdDippy", "animal2", "bdAnimal2", "noodle", "bdNoodle", "berrybonz",
+            "bdBerrybonz", "fries", "bdFries", "mb", "bdMB", "mywatch", "bdMyWatch",
+            "ishida", "bdIshida", "cupsealer", "bdCupSealer", "rollete", "bdRollete",
+            "pp5", "bdPP5", "mb5", "bdMB5", "mb35", "bdMB35", "max", "bdMax", "gfries", "bdGFries"
+        ];
+
+        // Bersihkan dulu isi form lama
+        keys.forEach(k => document.getElementById(k).value = "");
+
+        // Parsing String Log ("starchless:10, multipond:5") ke masing-masing box input
+        ["mesin", "breakdown"].forEach(t => {
+            let logString = (t === "mesin") ? (row[6] || "") : (row[7] || "");
+            if(logString && logString !== "-") {
+                logString.split(", ").forEach(pasang => {
+                    let part = pasang.split(":");
+                    if(part[0] && document.getElementById(part[0].trim())) {
+                        document.getElementById(part[0].trim()).value = part[1] ? part[1].trim() : "";
+                    }
+                });
+            }
+        });
+    }
+
+    function pemicuEditMaintenance(no, tanggal, shift, area, mesin, remark, supervisor) {
+        isEditMode = true;
+        editIdMaint = no;
+
+        document.getElementById("pageData").style.display = "none";
+        showMaintenance();
+
+        // Ubah format dd/mm/yyyy dari tabel menjadi yyyy-mm-dd agar bisa dibaca <input type="date">
+        if (tanggal.includes("/")) {
+            const p = tanggal.split("/");
+            document.getElementById("mtTanggal").value = `${p[2]}-${p[1]}-${p[0]}`;
+        }
+        
+        document.getElementById("mtShift").value = shift;
+        document.getElementById("mtArea").value = area === "-" ? "" : area;
+        document.getElementById("mtMesin").value = mesin === "-" ? "" : mesin;
+        document.getElementById("mtRemark").value = remark === "-" ? "" : remark;
+        document.getElementById("mtSupervisor").value = supervisor === "-" ? "" : supervisor;
+    }
+    
+    // SUBMIT FORM PRODUKSI (DENGAN LOGIKA INPUT DAN UPDATE)
+    document.getElementById("formProduksi").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById("submitBtn");
+    
+        const data = {
+            action: isEditMode ? "updateProduksi" : "insertProduksi", // Flag penentu jenis rute di App Script
+            jenis: "produksi",
+            sheetName: currentSheetName,
+            bulanAngka: currentBulanAngka,
+            tahunAngka: currentTahunAngka,
+            tanggal: document.getElementById("tanggal").value,
+            shift: document.getElementById("shift").value,
+            supervisor: document.getElementById("supervisor").value,
+            starchless: document.getElementById("starchless").value,
+            bdStarchless: document.getElementById("bdStarchless").value,
+            hassia: document.getElementById("hassia").value,
+            kawashima: document.getElementById("kawashima").value,
+            multipond: document.getElementById("multipond").value,
+            bdMultipond: document.getElementById("bdMultipond").value, 
+            pp: document.getElementById("pp").value,
+            bdPP: document.getElementById("bdPP").value,               
+            crunchy: document.getElementById("crunchy").value,
+            bdCrunchy: document.getElementById("bdCrunchy").value,       
+            animal: document.getElementById("animal").value,
+            bdAnimal: document.getElementById("bdAnimal").value,         
+            zugi: document.getElementById("zugi").value,
+            bdZugi: document.getElementById("bdZugi").value,             
+            dippy: document.getElementById("dippy").value,
+            bdDippy: document.getElementById("bdDippy").value,           
+            animal2: document.getElementById("animal2").value,
+            bdAnimal2: document.getElementById("bdAnimal2").value,       
+            noodle: document.getElementById("noodle").value,
+            bdNoodle: document.getElementById("bdNoodle").value,         
+            berrybonz: document.getElementById("berrybonz").value,
+            bdBerrybonz: document.getElementById("bdBerrybonz").value,   
+            fries: document.getElementById("fries").value,
+            bdFries: document.getElementById("bdFries").value,           
+            mb: document.getElementById("mb").value,
+            bdMB: document.getElementById("bdMB").value,                 
+            mywatch: document.getElementById("mywatch").value,
+            bdMyWatch: document.getElementById("bdMyWatch").value,
+            ishida: document.getElementById("ishida").value,
+            bdIshida: document.getElementById("bdIshida").value,         
+            cupsealer: document.getElementById("cupsealer").value,
+            bdCupSealer: document.getElementById("bdCupSealer").value,   
+            rollete: document.getElementById("rollete").value,
+            bdRollete: document.getElementById("bdRollete").value,       
+            pp5: document.getElementById("pp5").value,
+            bdPP5: document.getElementById("bdPP5").value,               
+            mb5: document.getElementById("mb5").value,
+            bdMB5: document.getElementById("bdMB5").value,
+            mb35: document.getElementById("mb35").value,
+            bdMB35: document.getElementById("bdMB35").value,             
+            max: document.getElementById("max").value,
+            bdMax: document.getElementById("bdMax").value,               
+            gfries: document.getElementById("gfries").value,
+            bdGFries: document.getElementById("bdGFries").value          
+        };
+    
+        if (data.tanggal < 1 || data.tanggal > 31) { alert("Tanggal harus 1 - 31"); return; }
+        if (data.shift < 1 || data.shift > 3) { alert("Shift harus 1 - 3"); return; }
+        if (data.supervisor == "") { alert("Silakan pilih supervisor"); return; }
+    
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Menyimpan...";
+    
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            
+            if (result.success){
+                alert(isEditMode ? "Data berhasil diperbarui!" : "Data berhasil disimpan!");
+                document.getElementById("formProduksi").reset();
+                kembaliMenu();
+            } else {
+                alert(result.message || "Gagal memproses data");
+            }
+        } catch (err) {
+            alert("Gagal terhubung ke server");
+            console.error(err);
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Simpan";
+    });
+    
+    // SUBMIT FORM MAINTENANCE (DENGAN LOGIKA INPUT DAN UPDATE)
+    document.getElementById("formMaintenance").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        const inputTanggal = document.getElementById("mtTanggal").value;
+        const shift = document.getElementById("mtShift").value;
+        const supervisor = document.getElementById("mtSupervisor").value;
+        const btnMainSubmit = document.getElementById("btnMainSubmit");
+    
+        if (!inputTanggal) { alert("Silakan pilih tanggal terlebih dahulu"); return; }
+        if (!shift) { alert("Silakan pilih shift terlebih dahulu"); return; }
+        if (supervisor == "") { alert("Silakan pilih supervisor"); return; }
+    
+        const data = {
+            action: isEditMode ? "updateMaintenance" : "insertMaintenance",
+            jenis: "maintenance",
+            no: editIdMaint,
+            tanggal: inputTanggal,
+            shift: shift,
+            area: document.getElementById("mtArea").value,
+            mesin: document.getElementById("mtMesin").value,
+            remark: document.getElementById("mtRemark").value,
+            supervisor: supervisor
+        };
+    
+        btnMainSubmit.disabled = true;
+        btnMainSubmit.textContent = "Menyimpan...";
+    
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+    
+            if (result.success) {
+                alert(result.message);
+                document.getElementById("formMaintenance").reset();
+                kembaliMenu();
+            } else {
+                alert(result.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Gagal terhubung ke server");
+        }
+        btnMainSubmit.disabled = false;
+        btnMainSubmit.textContent = "Simpan";
+    });
+    
+    window.onload = function(){
+        isiSupervisor();
+    }
+  </script>
+</body>
+</html>
