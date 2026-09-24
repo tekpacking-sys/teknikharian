@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<title>Laporan Shift Teknik Packing</title>
+<style>
+    body {
+        background-color: azure;
+        font-family: sans-serif;
+    }
+    .form {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 10px;
+        max-width: 500px;
+    }
+    .form-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    label {
+        font-weight: bold;
+        flex: 1;
+    }
+    input, select, textarea {
+        background-color: #fff;
+        border: 1px solid #3336;
+        border-radius: 3px;
+        width: 60%;
+        padding: 5px;
+        box-sizing: border-box;
+        font-size: 14px;
+    }
+    textarea {
+        border-radius: 8px;
+        width: 100%;
+        margin-top: 15px;
+    }
+    .area-group {
+        display: none;
+        margin-top: 10px;
+    }
+    /* Tombol WhatsApp + Kirim menjadi satu tombol dan tepat di tengah */
+    .wa-send-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 15px;
+        margin-bottom: 5px;
+    }
+
+    .send {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background-color: #25D366;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        margin: 0;
+        padding: 10px 18px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .send svg {
+        width: 22px;
+        height: 22px;
+        flex: 0 0 auto;
+    }
+    
+    .sub {
+    border: 1px solid #000;
+    border-radius: 5px;
+    height: 40px;
+    width: 150px;
+    padding-left: 20px;
+    margin-bottom: 10px;
+
+    display: flex;
+    align-items: center;
+}
+    
+    /* Background kotak Select2 */
+.select2-container--default .select2-selection--multiple {
+    background-color: #fff;
+    border: 1px solid #3336;
+    min-height: 35px;
+}
+
+/* Background item yang dipilih */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: teal;
+    border: 1px solid teal;
+    color: white;
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+
+/* Tombol silang hapus */
+.select2-container--default .select2-selection__choice__remove {
+    color: white;
+    margin-right: 5px;
+}
+
+.select2-container--default .select2-selection__choice__remove:hover {
+    color: red;
+}
+
+/* Background dropdown pilihan */
+.select2-container--default .select2-results__option {
+    background-color: #333;
+    color: #fff;
+}
+
+/* Warna saat item disorot */
+.select2-container--default .select2-results__option--highlighted {
+    background-color: teal !important;
+    color: white;
+}
+    .custom-autocomplete-list {
+        position: absolute; z-index: 100; background: white; border: 1px solid #ccc;
+        border-radius: 5px; width: 60%; right: 5px; max-height: 150px; overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: none;
+    }
+    .custom-autocomplete-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; color: #333; font-size: 14px; }
+</style>
+</head>
+
+<body>
+<h3>Laporan Shift Teknik Packing</h3>
+
+<div class="form">
+
+    <div class="form-row">
+        <label>Hari/Tgl</label>
+        <input type="date" id="tanggal">
+    </div>
+
+    <div class="form-row">
+        <label>Shift</label>
+        <select id="shift">
+            <option value="">Pilih Shift</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+        </select>
+    </div>
+    
+    <div class="form-row">
+        <label>Ka.Shift</label>
+        <select id="kashift">
+            <option value="">Pilih Ka.Shift</option>
+            <option>Ruslan Budi</option>
+            <option>Sutarno</option>
+            <option>Sudirman</option>
+            <option>Saepudin</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+    <label>Nama Personil</label>
+    <select class="select2-multi" multiple="multiple" style="width: 60%;">
+        <option>Azis Muslim</option>
+        <option>Budi Narto</option>
+        <option>Acep Apandi</option>
+        <option>Dede Sulaeman</option>
+        <option>Ali Sabana</option>
+        <option>Tidar Akbar</option>
+        <option>Maryadi</option>
+        <option>Irwansyah</option>
+        <option>Agus Surono</option>
+        <option>Sapto Kuncoro</option>
+        <option>Agus Karna</option>
+        <option>Heri Setiadi</option>
+        <option>Sudarto</option>
+        <option>Alfi SR</option>
+        <option>Andi Budianto</option>
+        <option>Taupik</option>
+        <option>Heri Gunawan</option>
+        <option>Rahmat Herdiyanto</option>
+        <option>Sandra Zulkifli</option>
+        <option>Dodi Priyonggo</option>
+        <option>Eka Satya W</option>
+        <option>Rahmat</option>
+    </select>
+</div>
+
+    <div class="form-row">
+        <label>Area</label>
+        <select id="area" onchange="pilihArea()">
+            <option value="">Pilih Area</option>
+            <option value="yupi1">Yupi 1</option>
+            <option value="yupi34">Yupi 3/4</option>
+            <option value="yupi5">Yupi 5</option>
+        </select>
+    </div>
+
+<!--- YUPI 1 --->
+    <div id="yupi1" class="area-group">
+        <div class="form-row">
+            <label>PP</label>
+            <input type="text" id="starchless">
+        </div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jstarchless">
+        </div>
+    </div>
+
+<!--- YUPI 3/4 --->
+    <div id="yupi34" class="area-group">
+        <div class="sub">
+        <h4>Yupi3/4 Lantai 1</h4>
+        </div>
+        <div class="form-row"><label>Ishida 1</label><input type="text" id="ishida"></div>
+        <div class="form-row"><label>Ishida 2</label><input type="text" id="ishida1"></div>
+        <div class="form-row"><label>Kawashima</label><input type="text" id="kawashima"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jkawashima">
+        </div>
+        <div class="form-row"><label>Multipond</label><input type="text" id="multipond"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jmultipond">
+        </div>
+        <div class="form-row"><label>Dippy</label><input type="text" id="dippy"></div>
+        <div class="form-row"><label>Animal</label><input type="text" id="animal"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="janimal">
+        </div>
+        <div class="form-row"><label>Animal line 2</label><input type="text" id="animal2"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="janimal2">
+        </div>
+        <div class="form-row"><label>Zugi</label><input type="text" id="zugi"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jzugi">
+        </div>
+        <hr style="border: 1px solid #0008">
+    <div class="sub">
+        <h4>Yupi3/4 Lantai 2</h4>
+        </div>
+        <div class="form-row"><label>Cup Sealer</label><input type="text" id="noodle"></div>
+        <div class="form-row"><label>Berrybonz</label><input type="text" id="berry"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jberry">
+        </div>
+        <div class="form-row"><label>Crunchy</label><input type="text" id="crunchy"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jcrunchy">
+        </div>
+        <div class="form-row"><label>G Fries</label><input type="text" id="gfries"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jgfries">
+        </div>
+        <div class="form-row"><label>MB Atas</label><input type="text" id="mb4"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jmb4">
+        </div>
+        <div class="form-row"><label>My Watch</label><input type="text" id="watch"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jwatch">
+        </div>
+        <div class="form-row"><label>PP</label><input type="text" id="pp3"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jpp3">
+        </div>
+    </div>
+
+<!--- YUPI 5 --->
+    <div id="yupi5" class="area-group">
+    <div class="sub">
+        <h4>Yupi 5 Lantai 1</h4>
+        </div>
+        <div class="form-row"><label>Ishida</label><input type="text" id="ishida2"></div>
+        <div class="form-row"><label>Kawashima</label><input type="text" id="kwshima"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jkwshima">
+        </div>
+        <div class="form-row"><label>Cup Sealer</label><input type="text" id="tl"></div>
+        <div class="form-row"><label>Sandwich</label><input type="text" id="sandwich"></div>
+        
+    <div class="sub">
+        <h4>Yupi 5 Lantai 2</h4>
+        </div>
+        <div class="form-row"><label>Rollete</label><input type="text" id="rollete"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jrollete">
+        </div>
+        <div class="form-row"><label>PP</label><input type="text" id="pp5"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jpp5">
+        </div>
+        <div class="form-row"><label>MB</label><input type="text" id="mb5"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jmb5">
+        </div>
+        <div class="form-row"><label>MB Max</label><input type="text" id="max"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jmax">
+        </div>
+        <div class="form-row"><label>G Fries</label><input type="text" id="gfries5"></div>
+        <div class="form-row">
+            <label>Jumlah</label>
+            <input type="number" id="jgfries5">
+        </div>
+    </div>
+
+    <hr>
+
+    <div style="margin-top: 20px" class="form-cell">
+        <label>NOTE PEKERJAAN</label>
+        <textarea id="kerusakan" rows="13"></textarea>
+    </div>
+    
+    <div class="wa-send-row">
+        <button type="button" onclick="kirimKeWA()" class="send">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 308 308" aria-hidden="true">
+                <path fill="currentColor" d="M227.904 176.981c-3.522-1.761-20.802-10.269-24.037-11.442-3.235-1.173-5.584-1.761-7.933 1.761-2.348 3.522-9.049 11.442-11.092 13.791-2.044 2.348-4.087 2.643-7.609.882-3.522-1.761-14.867-5.481-28.328-17.47-10.479-9.337-17.531-20.871-19.575-24.393-2.044-3.522-.218-5.426 1.542-7.186 1.58-1.58 3.522-4.087 5.283-6.13 1.761-2.044 2.348-3.522 3.522-5.871 1.173-2.348.587-4.392-.294-6.13-0.882-1.761-7.933-19.13-10.875-26.221-2.864-6.883-5.786-5.952-7.933-6.062-2.062-.104-4.436-.104-6.81-.104-2.374 0-6.233.882-9.468 4.392-3.235 3.522-12.357 12.074-12.357 29.44 0 17.365 12.651 34.137 14.412 36.486 1.761 2.348 24.896 38.016 60.334 53.284 8.432 3.645 15.021 5.823 20.147 7.452 8.463 2.695 16.177 2.313 22.28 1.402 6.786-1.011 20.802-8.503 23.743-16.711 2.942-8.208 2.942-15.247 2.06-16.711-.881-1.463-3.229-2.345-6.751-4.106z"/>
+                <path fill="currentColor" d="M153.999 0C68.91 0 0 68.91 0 153.999c0 27.157 7.078 53.539 20.536 76.671L0 308l79.465-20.849c22.385 12.215 47.931 18.66 74.534 18.66 85.089 0 153.999-68.91 153.999-153.999C307.998 68.91 239.088 0 153.999 0zm0 282.203c-23.702 0-46.902-6.377-67.126-18.441l-4.819-2.862-50.015 13.119 13.385-48.815-3.138-4.989c-13.067-20.732-19.988-44.697-19.988-69.206 0-71.748 58.411-130.159 130.16-130.159 71.748 0 130.159 58.411 130.159 130.159 0 71.748-58.411 130.159-130.159 130.159z"/>
+            </svg>
+            <span>Kirim ke WhatsApp</span>
+        </button>
+    </div>
+ </div>
+</div>
+
+<script>
+function pilihArea() {
+    document.getElementById("yupi1").style.display = "none";
+    document.getElementById("yupi34").style.display = "none";
+    document.getElementById("yupi5").style.display = "none";
+
+    const area = document.getElementById("area").value;
+
+    if (area) {
+        document.getElementById(area).style.display = "block";
+    }
+}
+    $(document).ready(function() {
+    $('.select2-multi').select2({
+        placeholder: "Pilih Nama",
+        allowClear: true
+    });
+
+    // Mengeset pilihan area default ke Yupi 1 saat pertama kali dibuka
+    document.getElementById("area").value = "yupi1";
+    pilihArea();
+});
+
+    // Fungsi Auto complete
+    const shortcutMap = {
+        a: ["Animal", "Appeton", "Apple ring", "Aquarium"],
+        b: ["Baby Shark", "Bear", "Berrybonz","Beyond Fit", "Brite Worm"],
+        c: ["Calci Bean", "CDZ", "Chocoo Glee", "Chop chop", "Chiby", "Chupa Chup", "Cola", "Cola bonz", "Cola Burger", "Cookies", "Cooktail", "Confetty kiss", "Crunchy Gummies"],
+        d: ["Dippy","Dr Pepper 128 gr"], 
+        e: ["Enervon C", "Exotic Mango", "Expert boost"], 
+        f: ["Fitkom", "Fruit bites", "Frunkfuter", "Fun Gum"],
+        g: ["Giant Cola", "Grape", "Gummy Bear", "Gummy Bunnies", "Gummy Fang", "Gummy Fries"], 
+        h: ["Happy Bear 120 gr"], 
+        i: ["Iced Cola", "Inaco"],
+        j: ["JFF", "Jungle Fun"], 
+        k: ["Krabby Patties", "Krabby Patties 72 gr", "Kuai kuai"],
+        l: ["Little Star"], 
+        m: ["MB Cola", "MB Max", "MB Sour", "MB Twin","MB WO", "MB Yupi", "MB Yupi 500gr", "Milly Moose", "Milk Shake", "Mini Monz", "My Watch"],
+        n: ["Neon Stix", "Neon Stix 120 gr", "Noodle"], 
+        o: ["OFF", "Orange"],
+        p: ["Party Mix", "Pastilles", "Pizza", "Puzzle"], 
+        q: ["QQ"], 
+        r: ["Raspberry & Blackberry"],
+        s: ["Sandwich", "Sour Giant Cola 500 gr", "Sour O Ring", "Sea World","Skulls",  "Starlite", "St kiss", "St kiss 45 gr", "St kiss 120 gr", "Sweet Heart"],
+        t: ["TJ Joybee", "Tropical"], 
+        v: ["Vicee", "Vidoran", "Vitaminis", "Vita C Gummies", "Vit D+"],
+        w: ["Water Melon", "Worm"], 
+        y: ["Yoghurt", "Youvit"],
+        z: ["Zugi Zagi Zug"]
+    };
+    
+    const setupAutocomplete = (input) => {
+        let suggestionBox = document.createElement("div");
+        suggestionBox.className = "custom-autocomplete-list";
+        input.parentNode.appendChild(suggestionBox);
+        input.addEventListener('input', () => {
+    const fullVal = input.value;
+    // Menggunakan regex agar lebih fleksibel terhadap spasi setelah koma
+    const parts = fullVal.split(/,\s*/); 
+    const lastPart = parts[parts.length - 1].toLowerCase(); 
+    
+    if (lastPart.length === 0) { 
+        suggestionBox.style.display = "none"; 
+        return; 
+    }
+    
+    
+    const firstChar = lastPart[0];
+    if (shortcutMap[firstChar]) {
+        
+        const filtered = shortcutMap[firstChar].filter(item => 
+            item.toLowerCase().startsWith(lastPart)
+        );
+
+        if (filtered.length > 0) {
+            suggestionBox.innerHTML = "";
+            suggestionBox.style.display = "block";
+            filtered.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "custom-autocomplete-item";
+                div.textContent = item;
+                div.onclick = (e) => {
+                    e.preventDefault();
+                    parts[parts.length - 1] = item;
+                    input.value = parts.join(", ");
+                    suggestionBox.style.display = "none";
+                    input.focus();
+                };
+                suggestionBox.appendChild(div);
+            });
+        } else {
+            suggestionBox.style.display = "none";
+        }
+    } else { 
+        suggestionBox.style.display = "none"; 
+    }
+});
+        document.addEventListener("click", (e) => { if (e.target !== input) suggestionBox.style.display = "none"; });
+    };
+
+    const statusInputs = ["starchless", "ishida", "ishida1", "kawashima", "multipond", "pp3", "dippy", "animal", "animal2", "zugi", "gfries", "gfries5", "noodle", "berry", "crunchy", "ishida2", "kwshima", "tl", "sandwich", "pp5", "mb4", "mb5", "max", "rollete", "watch"];
+    statusInputs.forEach(id => { const el = document.getElementById(id); if (el) setupAutocomplete(el); });
+    
+    // Fungsi untuk menyimpan semua data input ke localStorage
+function saveData() {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    const data = {};
+    
+    inputs.forEach(input => {
+        // Khusus untuk select2 (multi), kita simpan nilainya sebagai array
+        if (input.classList.contains('select2-multi')) {
+            data[input.id || 'personil'] = $(input).val();
+        } else {
+            data[input.id] = input.value;
+        }
+    });
+    
+    localStorage.setItem('laporanShiftData', JSON.stringify(data));
+}
+
+// Fungsi untuk memuat data dari localStorage saat halaman dimuat
+function loadData() {
+    const savedData = localStorage.getItem('laporanShiftData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        for (const id in data) {
+            const el = document.getElementById(id) || document.querySelector(`[name="${id}"]`);
+            if (el) {
+                if (el.classList.contains('select2-multi')) {
+                    $(el).val(data[id]).trigger('change');
+                } else {
+                    el.value = data[id];
+                }
+            }
+        }
+        // Pastikan tampilan area yang dipilih muncul kembali
+        pilihArea();
+    }
+}
+    
+    function baris(label, isi, lebar = 14, wrap = 34) {
+
+    isi = (isi ?? "").toString().trim();
+    if (!isi) isi = "-";
+
+    const kiri = label.padEnd(lebar, " ");
+
+    if (isi.length <= wrap) {
+        return `${kiri}: ${isi}`;
+    }
+
+    let hasil = `${kiri}: ${isi.substring(0, wrap)}`;
+
+    let sisa = isi.substring(wrap);
+
+    while (sisa.length > 0) {
+        hasil += "\n" + " ".repeat(lebar + 2) + sisa.substring(0, wrap);
+        sisa = sisa.substring(wrap);
+    }
+
+    return hasil;
+}
+    
+    function kirimKeWA() {
+
+    const tanggalInput = document.getElementById("tanggal").value;
+    const shift = document.getElementById("shift").value;
+    const kashift = document.getElementById("kashift").value;
+    const note = document.getElementById("kerusakan").value;
+
+    //==========================
+    // Format tanggal
+    //==========================
+    let tanggalTeks = "-";
+
+    if (tanggalInput) {
+
+        const d = new Date(tanggalInput);
+
+        const hari = [
+            "Minggu","Senin","Selasa","Rabu",
+            "Kamis","Jumat","Sabtu"
+        ];
+
+        const bulan = [
+            "Januari","Februari","Maret","April",
+            "Mei","Juni","Juli","Agustus",
+            "September","Oktober","November","Desember"
+        ];
+
+        tanggalTeks =
+            `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    //==========================
+    // Personil
+    //==========================
+    let personil = [];
+
+    $(".select2-multi option:selected").each(function(){
+        personil.push($(this).text());
+    });
+
+    const areaValue = document.getElementById("area").value;
+
+    let areaText = "";
+
+    switch(areaValue){
+
+        case "yupi1":
+            areaText = "Yupi 1";
+            break;
+
+        case "yupi34":
+            areaText = "Yupi 3/4";
+            break;
+
+        case "yupi5":
+            areaText = "Yupi 5";
+            break;
+    }
+
+    //==========================
+    // Susun laporan
+    //==========================
+
+    let pesan = [];
+    
+    // Mengatur kolom agar titik dua selalu sejajar
+function tambahData(arr, nama, nilai) {
+    if (!nilai || nilai.trim() === "") return;
+
+    const lebarKolom = 14; // bisa diubah 18-22
+    const kiri = nama.padEnd(lebarKolom, " ");
+
+    arr.push(`${kiri}: ${nilai}`);
+}
+
+// Menambahkan baris jumlah tepat di bawah mesin
+function tambahJumlah(arr, jumlah) {
+    if (!jumlah || jumlah.trim() === "") return;
+
+    const kiri = "Jumlah".padEnd(14, " ");
+    arr.push(`${kiri}: ${jumlah}`);
+}
+
+    pesan.push("```");
+    pesan.push("LAPORAN SHIFT TEKNIK PACKING");
+    pesan.push("");
+
+    pesan.push(baris("Hari/Tgl", tanggalTeks));
+    pesan.push(baris("Shift", shift));
+    pesan.push(baris("Ka.Shift", kashift));
+    pesan.push(baris("Personil", personil.join(", ")));
+    pesan.push(baris("Area", areaText));
+
+    pesan.push("");
+    pesan.push("PRODUKSI");
+
+    //---------------------------------------------------
+    // YUPI 1
+    //---------------------------------------------------
+
+    if(areaValue=="yupi1"){
+
+        tambahData(pesan,"PP",document.getElementById("starchless").value);
+        tambahJumlah(pesan,document.getElementById("jstarchless").value);
+
+    }
+
+    //---------------------------------------------------
+    // YUPI 3/4
+    //---------------------------------------------------
+
+    if(areaValue=="yupi34"){
+
+        tambahData(pesan,"Ishida 1",document.getElementById("ishida").value);
+        tambahData(pesan,"Ishida 2",document.getElementById("ishida1").value);
+
+        tambahData(pesan,"Kawashima",document.getElementById("kawashima").value);
+        tambahJumlah(pesan,document.getElementById("jkawashima").value);
+
+        tambahData(pesan,"Multipond",document.getElementById("multipond").value);
+        tambahJumlah(pesan,document.getElementById("jmultipond").value);
+        
+        tambahData(pesan,"Dippy",document.getElementById("dippy").value);
+
+        tambahData(pesan,"Animal",document.getElementById("animal").value);
+        tambahJumlah(pesan,document.getElementById("janimal").value);
+
+        tambahData(pesan,"Animal L2",document.getElementById("animal2").value);
+        tambahJumlah(pesan,document.getElementById("janimal2").value);
+        
+        tambahData(pesan,"Zugi",document.getElementById("zugi").value);
+        tambahJumlah(pesan,document.getElementById("jzugi").value);
+        
+        tambahData(pesan,"Cup Sealer",document.getElementById("noodle").value);
+
+        tambahData(pesan,"Berrybonz",document.getElementById("berry").value);
+        tambahJumlah(pesan,document.getElementById("jberry").value);
+        
+        tambahData(pesan,"Crunchy",document.getElementById("crunchy").value);
+        tambahJumlah(pesan,document.getElementById("jcrunchy").value);
+
+        tambahData(pesan,"G Fries",document.getElementById("gfries").value);
+        tambahJumlah(pesan,document.getElementById("jgfries").value);
+        
+        tambahData(pesan,"MB Atas",document.getElementById("mb4").value);
+        tambahJumlah(pesan,document.getElementById("jmb4").value);
+
+        tambahData(pesan,"My Watch",document.getElementById("watch").value);
+        tambahJumlah(pesan,document.getElementById("jwatch").value);
+        
+        tambahData(pesan,"PP",document.getElementById("pp3").value);
+        tambahJumlah(pesan,document.getElementById("jpp3").value);
+
+    }
+
+    //---------------------------------------------------
+    // YUPI 5
+    //---------------------------------------------------
+
+    if(areaValue=="yupi5"){
+
+        tambahData(pesan,"Ishida",document.getElementById("ishida2").value);
+
+        tambahData(pesan,"Kawashima",document.getElementById("kwshima").value);
+        tambahJumlah(pesan,document.getElementById("jkwshima").value);
+
+        tambahData(pesan,"Cup Sealer",document.getElementById("tl").value);
+
+        tambahData(pesan,"Sandwich",document.getElementById("sandwich").value);
+
+        tambahData(pesan,"PP",document.getElementById("pp5").value);
+        tambahJumlah(pesan,document.getElementById("jpp5").value);
+
+        tambahData(pesan,"MB",document.getElementById("mb5").value);
+        tambahJumlah(pesan,document.getElementById("jmb5").value);
+
+        tambahData(pesan,"MB Max",document.getElementById("max").value);
+        tambahJumlah(pesan,document.getElementById("jmax").value);
+
+        tambahData(pesan,"Rollete",document.getElementById("rollete").value);
+        tambahJumlah(pesan,document.getElementById("jrollete").value);
+        tambahData(pesan,"G Fries",document.getElementById("gfries5").value);
+        tambahJumlah(pesan,document.getElementById("jgfries5").value);
+
+    }
+
+    pesan.push("");
+    pesan.push("NOTE PEKERJAAN");
+    pesan.push(note);
+    pesan.push("```");
+
+    const url =
+        "https://api.whatsapp.com/send?text=" +
+        encodeURIComponent(pesan.join("\n"));
+
+    window.open(url,"_blank");
+
+    localStorage.removeItem("laporanShiftData");
+    location.reload();
+
+}
+</script>
+</body>
+</html>
