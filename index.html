@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Firebase SDK (Firestore) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<title>Laporan Shift Teknik Packing</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        background-color: #eefafa;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 5px;
+    }
+
+    .dashboard {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: #eefafa; 
+    z-index: 100;            
+    padding-top: 5px;
+    padding-bottom: 0px;
+}
+
+    .dash-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .dash-header h2 {
+        margin: 0;
+        color: #000;
+        font-size: 20px;
+        text-align: center;
+        flex: 1;
+    }
+
+    .add-btn {
+        background: #00897b;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 14px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .filter-bar input, .filter-bar select {
+        padding: 6px 10px;
+        border: 2px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        background: none;
+        margin-left: 5px;
+    }
+
+    /* CARD / TABEL STYLE */
+    .laporan-card {
+        background: transparent;
+        border-radius: 8px;
+        padding: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .info-header {
+        margin-bottom: 10px;
+        font-size: 15px;
+        line-height: 1.1;
+        font-weight: bold;
+        width: 100%;
+    }
+
+    .info-header td {
+        padding: 2px 4px;
+        vertical-align: top;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+
+    .report-table th, .report-table td {
+        border: 1px solid #777;
+        padding: 6px 8px;
+        text-align: left;
+    }
+
+    .report-table th {
+        background-color: #b0c4de;
+        color: #000;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .report-table th.col-sigma {
+        width: 40px;
+        text-align: center;
+    }
+
+    .section-header {
+        background-color: #99ccff;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    /* NOTE PEKERJAAN - dipisahkan menurut area */
+    .note-container {
+        padding: 0 !important;
+        background: #eef7ff;
+        vertical-align: top;
+    }
+
+    .note-area-block {
+        padding: 0px 10px 0px;
+        white-space: pre-line;
+    }
+
+    .note-area-block + {
+        border-top: 2px solid #b00;
+        margin-left: 10px;
+        width: 80%;
+    }
+
+    .note-area-title {
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        margin-top: -5px;
+    }
+
+    .note-area-text {
+        white-space: pre-line;
+        line-height: 1.45;
+    }
+
+    .status-off {
+        background-color: #cc0000;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 2px;
+        display: block;
+        width: 100%;
+        padding: 2px 0;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .btn-edit {
+        background-color: #1e90ff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-delete {
+        background-color: #ff0000;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    /* FORM STYLES */
+    .form {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 10px;
+        max-width: 500px;
+    }
+    .form-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    label { font-weight: bold; flex: 1; font-size: 14px; }
+    input, select, textarea {
+    background-color: #fff;
+    border: 1px solid #3336;
+    border-radius: 3px;
+    width: 60% !important;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+/* Khusus Container Select2 agar fleksibel mengikuti wrapper */
+.select2-container {
+    width: 60% !important;
+    font-size: 14px;
+}
+    input, select {
+        padding: 5px;
+    }
+    textarea { border-radius: 8px; width: 100% !important; margin-top: 15px; padding-left: 10px; }
+    .area-group { display: none; margin-top: 10px; }
+    .wa-send-row { display: flex; justify-content: center; align-items: center; margin-top: 15px; }
+    .send {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        background-color: #2B547E; border: none; border-radius: 6px; color: white;
+        padding: 10px 18px; cursor: pointer; font-size: 14px; font-weight: bold;
+    }
+    .send svg { width: 22px; height: 22px; }
+    .sub { background-color: #6F4E37; color: #fff; height: 40px; width: 100%; padding-left: 20px; margin-bottom: 10px; display: flex; align-items: center; }
+
+    /* Select2 Customization to match form inputs */
+    .select2-container--default .select2-selection--multiple {
+        background-color: #fff;
+        border: 1px solid #3336;
+        border-radius: 3px;
+        min-height: 32px;
+        padding: 2px;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: teal;
+        border: 1px solid teal;
+        color: white;
+        border-radius: 4px;
+        padding: 1px 6px;
+        margin-top: 3px;
+    }
+    .select2-container--default .select2-selection__choice__remove { color: white; margin-right: 5px; }
+    .select2-container--default .select2-selection--multiple .select2-search__field {
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .custom-autocomplete-list {
+        position: absolute; z-index: 100; background: white; border: 1px solid #ccc;
+        border-radius: 5px; width: 60%; right: 5px; max-height: 150px; overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: none;
+    }
+    .custom-autocomplete-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; color: #333; font-size: 14px; }
+
+    /* MODAL - diperbaiki agar form panjang bisa discroll lancar di HP */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #0008;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: 100vh;
+        height: 100dvh;
+        padding: 10px;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+        max-width: 560px;
+        width: 100%;
+        min-height: calc(100dvh - 20px);
+        margin: 0 auto;
+        position: relative;
+        padding-bottom: 20px;
+    }
+    .modal-header {
+        background: teal;
+        color: white;
+        border-radius: 10px 10px 0 0;
+        padding: 9px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .modal-header h3 { margin:0; font-size:18px; }
+    .close-btn { border:0; background:transparent; color:white; font-size:30px; line-height:1; cursor:pointer; }
+    .modal .form {
+        max-width:none;
+        border-radius:0 0 10px 10px;
+        background:azure;
+        padding-bottom: 30px;
+    }
+
+    /* Ruang bawah ekstra supaya field terakhir tidak tertutup keyboard */
+    @media (max-width: 600px) {
+        .modal {
+            padding: 0;
+        }
+        .modal-content {
+            min-height: 100dvh;
+            padding-bottom: 80px;
+        }
+        .modal .form {
+            padding-bottom: 80px;
+        }
+        .modal input,
+        .modal select,
+        .modal textarea {
+            scroll-margin-top: 70px;
+            scroll-margin-bottom: 120px;
+        }
+    }
+</style>
+</head>
+
+<body>
+<div class="dashboard">
+  <div class="sticky-header">
+    <div class="dash-header">
+      <h2>Laporan Harian</h2>
+    </div>
+
+    <div class="filter-bar">
+      <input type="date" id="filterTanggal" onchange="muatLaporan()">
+      <button type="button" onclick="muatLaporan()" class="add-btn">↻</button>
+      <button type="button" class="add-btn" onclick="bukaForm()">＋</button>
+    </div>
+    <div id="statusLaporan" style="font-size:13px; color:#666; margin-bottom:10px; text-align:center;">Memuat laporan...</div>
+  </div>
+
+  <div id="daftarLaporan"></div>
+</div>
+
+<!-- MODAL FORM -->
+<div id="formModal" class="modal" onclick="tutupFormJikaLuar(event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Input Laporan Shift</h3>
+      <button type="button" class="close-btn" onclick="tutupForm()">×</button>
+    </div>
+
+    <form id="laporanForm" class="form">
+        <input type="hidden" id="editDocId" value="">
+
+        <div class="form-row">
+            <label>Hari/Tgl</label>
+            <input type="date" id="tanggal">
+        </div>
+
+        <div class="form-row">
+            <label>Shift</label>
+            <select id="shift">
+                <option value="">Pilih Shift</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+            </select>
+        </div>
+        
+        <div class="form-row">
+            <label>Ka.Shift</label>
+            <select id="kashift">
+                <option value="">Pilih Ka.Shift</option>
+                <option>Ruslan Budi</option>
+                <option>Sutarno</option>
+                <option>Sudirman</option>
+                <option>Saepudin</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label for="personil">Nama Personil</label>
+            <select id="personil" name="personil" multiple="multiple">
+                <option value="Azis Muslim">Azis Muslim</option>
+        <option value="Budi Narto">Budi Narto</option>
+        <option value="Acep Apandi">Acep Apandi</option>
+        <option value="Dede Sulaeman">Dede Sulaeman</option>
+        <option value="Ali Sabana">Ali Sabana</option>
+        <option value="Tidar Akbar">Tidar Akbar</option>
+        <option value="Maryadi">Maryadi</option>
+        <option value="Irwansyah">Irwansyah</option>
+        <option value="Agus Surono">Agus Surono</option>
+        <option value="Sapto Kuncoro">Sapto Kuncoro</option>
+        <option value="Agus Karna">Agus Karna</option>
+        <option value="Heri Setiadi">Heri Setiadi</option>
+        <option value="Sudarto">Sudarto</option>
+        <option value="Alfi SR">Alfi SR</option>
+        <option value="Andi Budianto">Andi Budianto</option>
+        <option value="Taupik">Taupik</option>
+        <option value="Heri Gunawan">Heri Gunawan</option>
+        <option value="Rahmat Herdiyanto">Rahmat Herdiyanto</option>
+        <option value="Sandra Zulkifli">Sandra Zulkifli</option>
+        <option value="Dodi Priyonggo">Dodi Priyonggo</option>
+        <option value="Eka Satya W">Eka Satya W</option>
+        <option value="Rahmat">Rahmat</option>
+        </select>
+        </div>
+
+        <div class="form-row">
+            <label>Area</label>
+            <select id="area" onchange="pilihArea()">
+                <option value="">Pilih Area</option>
+                <option value="yupi1">Yupi 1</option>
+                <option value="yupi34">Yupi 3/4</option>
+                <option value="yupi5">Yupi 5</option>
+            </select>
+        </div>
+
+    <!--- YUPI 1 --->
+        <div id="yupi1" class="area-group">
+            <div class="form-row"><label>PP</label><input type="text" id="starchless"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jstarchless"></div>
+        </div>
+
+    <!--- YUPI 3/4 --->
+        <div id="yupi34" class="area-group">
+            <div class="sub"><h4>Yupi 3/4 Lantai 1</h4></div>
+            <div class="form-row"><label>Ishida 1</label><input type="text" id="ishida"></div>
+            <div class="form-row"><label>Ishida 2</label><input type="text" id="ishida1"></div>
+            <div class="form-row"><label>Kawashima</label><input type="text" id="kawashima"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jkawashima"></div>
+            <div class="form-row"><label>Multipond</label><input type="text" id="multipond"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jmultipond"></div>
+            <div class="form-row"><label>Dippy</label><input type="text" id="dippy"></div>
+            <div class="form-row"><label>Animal</label><input type="text" id="animal"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="janimal"></div>
+            <div class="form-row"><label>Animal line 2</label><input type="text" id="animal2"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="janimal2"></div>
+            <div class="form-row"><label>Zugi</label><input type="text" id="zugi"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jzugi"></div>
+            <hr style="border: 1px solid #0008">
+            <div class="sub"><h4>Yupi 3/4 Lantai 2</h4></div>
+            <div class="form-row"><label>Cup Sealer</label><input type="text" id="noodle"></div>
+            <div class="form-row"><label>Berrybonz</label><input type="text" id="berry"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jberry"></div>
+            <div class="form-row"><label>Crunchy</label><input type="text" id="crunchy"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jcrunchy"></div>
+            <div class="form-row"><label>G Fries</label><input type="text" id="gfries"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jgfries"></div>
+            <div class="form-row"><label>MB Atas</label><input type="text" id="mb4"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jmb4"></div>
+            <div class="form-row"><label>My Watch</label><input type="text" id="watch"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jwatch"></div>
+            <div class="form-row"><label>PP</label><input type="text" id="pp3"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jpp3"></div>
+        </div>
+
+    <!--- YUPI 5 --->
+        <div id="yupi5" class="area-group">
+            <div class="sub"><h4>Yupi 5 Lantai 1</h4></div>
+            <div class="form-row"><label>Ishida</label><input type="text" id="ishida2"></div>
+            <div class="form-row"><label>Kawashima</label><input type="text" id="kwshima"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jkwshima"></div>
+            <div class="form-row"><label>Cup Sealer</label><input type="text" id="tl"></div>
+            <div class="form-row"><label>Sandwich</label><input type="text" id="sandwich"></div>
+            
+            <div class="sub"><h4>Yupi 5 Lantai 2</h4></div>
+            <div class="form-row"><label>Rollete</label><input type="text" id="rollete"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jrollete"></div>
+            <div class="form-row"><label>PP</label><input type="text" id="pp5"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jpp5"></div>
+            <div class="form-row"><label>MB</label><input type="text" id="mb5"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jmb5"></div>
+            <div class="form-row"><label>MB Max</label><input type="text" id="max"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jmax"></div>
+            <div class="form-row"><label>G Fries</label><input type="text" id="gfries5"></div>
+            <div class="form-row"><label>Jumlah</label><input type="number" id="jgfries5"></div>
+        </div>
+
+        <hr>
+
+        <div style="margin-top: 20px" class="form-cell">
+            <label style="display: block; margin-bottom: 5px;">NOTE PEKERJAAN</label>
+            <textarea id="kerusakan" rows="13"></textarea>
+        </div>
+        
+        <div class="wa-send-row">
+            <button type="button" onclick="kirimKeWA()" class="send">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 308 308" aria-hidden="true">
+                    <path fill="currentColor" d="M227.904 176.981c-3.522-1.761-20.802-10.269-24.037-11.442-3.235-1.173-5.584-1.761-7.933 1.761-2.348 3.522-9.049 11.442-11.092 13.791-2.044 2.348-4.087 2.643-7.609.882-3.522-1.761-14.867-5.481-28.328-17.47-10.479-9.337-17.531-20.871-19.575-24.393-2.044-3.522-.218-5.426 1.542-7.186 1.58-1.58 3.522-4.087 5.283-6.13 1.761-2.044 2.348-3.522 3.522-5.871 1.173-2.348.587-4.392-.294-6.13-0.882-1.761-7.933-19.13-10.875-26.221-2.864-6.883-5.786-5.952-7.933-6.062-2.062-.104-4.436-.104-6.81-.104-2.374 0-6.233.882-9.468 4.392-3.235 3.522-12.357 12.074-12.357 29.44 0 17.365 12.651 34.137 14.412 36.486 1.761 2.348 24.896 38.016 60.334 53.284 8.432 3.645 15.021 5.823 20.147 7.452 8.463 2.695 16.177 2.313 22.28 1.402 6.786-1.011 20.802-8.503 23.743-16.711 2.942-8.208 2.942-15.247 2.06-16.711-.881-1.463-3.229-2.345-6.751-4.106z"/>
+                    <path fill="currentColor" d="M153.999 0C68.91 0 0 68.91 0 153.999c0 27.157 7.078 53.539 20.536 76.671L0 308l79.465-20.849c22.385 12.215 47.931 18.66 74.534 18.66 85.089 0 153.999-68.91 153.999-153.999C307.998 68.91 239.088 0 153.999 0zm0 282.203c-23.702 0-46.902-6.377-67.126-18.441l-4.819-2.862-50.015 13.119 13.385-48.815-3.138-4.989c-13.067-20.732-19.988-44.697-19.988-69.206 0-71.748 58.411-130.159 130.16-130.159 71.748 0 130.159 58.411 130.159 130.159 0 71.748-58.411 130.159-130.159 130.159z"/>
+                </svg>
+                <span>Simpan / Kirim ke WA</span>
+            </button>
+        </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ==============================
+// FIREBASE CONFIG & APP LOGIC
+// ==============================
+const firebaseConfig = {
+    apiKey: "AIzaSyDWyfDxk0JYGjgwCqSZn6oOPGD9sBu3lH4",
+    authDomain: "laporan-standby.firebaseapp.com",
+    projectId: "laporan-standby",
+    storageBucket: "laporan-standby.firebasestorage.app",
+    messagingSenderId: "475663281847",
+    appId: "1:475663281847:web:f2573121a8225887e22732"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function bukaForm() {
+    document.getElementById("modalTitle").textContent = "Input Laporan Shift";
+    document.getElementById("editDocId").value = "";
+    document.getElementById("laporanForm").reset();
+    $("#personil").val(null).trigger("change");
+    pilihArea();
+    document.getElementById("formModal").classList.add("show");
+    document.body.style.overflow = "hidden";
+
+    // Pastikan posisi scroll modal dimulai dari atas setiap kali form dibuka
+    const modal = document.getElementById("formModal");
+    requestAnimationFrame(() => {
+        modal.scrollTop = 0;
+    });
+
+    // Re-trigger layout Select2 setelah modal tampil
+    setTimeout(() => {
+        $('#personil').select2({
+            placeholder: "Pilih Nama",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#formModal')
+        });
+    }, 100);
+}
+
+function tutupForm() {
+    document.getElementById("formModal").classList.remove("show");
+    document.body.style.overflow = "";
+}
+
+function tutupFormJikaLuar(event) {
+    if (event.target === document.getElementById("formModal")) tutupForm();
+}
+
+function escapeHtml(value) {
+    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" };
+    return String(value ?? "").replace(/[&<>\"']/g, c => map[c]);
+}
+
+function renderRow(nama, produk, jumlah) {
+    if (!produk && !jumlah) return "";
+    let isOff = (produk && produk.trim().toUpperCase() === "OFF");
+    let sigmaHtml = isOff ? `<span class="status-off">X</span>` : (jumlah || "");
+    return `
+        <tr>
+            <td>${escapeHtml(nama)}</td>
+            <td>${escapeHtml(produk || "-")}</td>
+            <td class="text-center">${sigmaHtml}</td>
+        </tr>
+    `;
+}
+
+async function muatLaporan() {
+    const daftar = document.getElementById("daftarLaporan");
+    const status = document.getElementById("statusLaporan");
+    daftar.innerHTML = "";
+    status.textContent = "Memuat laporan...";
+
+    try {
+        let snap = await db.collection("laporan_shift").orderBy("dibuatPada", "desc").limit(50).get();
+        const filterTanggal = document.getElementById("filterTanggal").value;
+
+        let grouped = {};
+
+        snap.forEach(doc => {
+            const d = doc.data();
+            if (filterTanggal && d.tanggal !== filterTanggal) return;
+
+            const key = `${d.tanggal}_${d.shift}`;
+
+            if (!grouped[key]) {
+                grouped[key] = {
+                    tanggal: d.tanggal,
+                    tanggalTeks: d.tanggalTeks,
+                    shift: d.shift,
+                    kashift: d.kashift,
+                    personilSet: new Set(),
+                    docIds: [],
+                    mergedData: {},
+                    kerusakanSet: new Set(),
+                    kerusakanByArea: {}
+                };
+            }
+
+            // Gabungkan Personil
+            if (Array.isArray(d.personil)) {
+                d.personil.forEach(p => grouped[key].personilSet.add(p));
+            } else if (typeof d.personil === "string" && d.personil.trim() !== "") {
+                d.personil.split(",").forEach(p => grouped[key].personilSet.add(p.trim()));
+            }
+
+            // Simpan Dokumen ID
+            grouped[key].docIds.push(doc.id);
+
+            // Gabungkan nilai mesin (ambil nilai non-kosong agar tidak saling timpa)
+            for (let field in d) {
+                if (d[field] !== undefined && d[field] !== null && d[field] !== "") {
+                    // Jika field belum diisi atau sebelumnya kosong, isi dengan nilai terbaru
+                    if (!grouped[key].mergedData[field]) {
+                        grouped[key].mergedData[field] = d[field];
+                    }
+                }
+            }
+
+            // NOTE PEKERJAAN dipisahkan berdasarkan area dan tidak dibuat dobel
+            if (d.kerusakan && d.kerusakan.trim() !== "") {
+                const areaNote = d.areaText || (d.area === "yupi1" ? "Yupi 1" : d.area === "yupi34" ? "Yupi 3/4" : d.area === "yupi5" ? "Yupi 5" : "Lainnya");
+                if (!grouped[key].kerusakanByArea[areaNote]) {
+                    grouped[key].kerusakanByArea[areaNote] = new Set();
+                }
+                grouped[key].kerusakanByArea[areaNote].add(d.kerusakan.trim());
+                grouped[key].kerusakanSet.add(d.kerusakan.trim());
+            }
+        });
+
+        const groupKeys = Object.keys(grouped);
+        status.textContent = `${groupKeys.length} laporan ditampilkan`;
+
+        if (!groupKeys.length) {
+            daftar.innerHTML = '<div style="text-align:center; padding:20px; background:white; border-radius:8px;">Belum ada laporan tersimpan.</div>';
+            return;
+        }
+
+        daftar.innerHTML = groupKeys.map(key => {
+            const g = grouped[key];
+            const d = g.mergedData;
+            const personilText = Array.from(g.personilSet).join(", ") || "-";
+
+            // Build Yupi 1
+            let yupi1Html = renderRow("PP", d.starchless, d.jstarchless);
+
+            // Build Yupi 3/4
+            let yupi34Html = "";
+            yupi34Html += renderRow("Ishida 1", d.ishida, "");
+            yupi34Html += renderRow("Ishida 2", d.ishida1, "");
+            yupi34Html += renderRow("Kawashima", d.kawashima, d.jkawashima);
+            yupi34Html += renderRow("Multipond", d.multipond, d.jmultipond);
+            yupi34Html += renderRow("PP", d.pp3, d.jpp3);
+            yupi34Html += renderRow("Crunchy", d.crunchy, d.jcrunchy);
+            yupi34Html += renderRow("Animal", d.animal, d.janimal);
+            yupi34Html += renderRow("Zugi", d.zugi, d.jzugi);
+            yupi34Html += renderRow("Dippy", d.dippy, "");
+            yupi34Html += renderRow("Cup Sealer", d.noodle, "");
+            yupi34Html += renderRow("Berrybonz", d.berry, d.jberry);
+            yupi34Html += renderRow("G. Fries", d.gfries, d.jgfries);
+            yupi34Html += renderRow("MB Atas", d.mb4, d.jmb4);
+            yupi34Html += renderRow("My Watch", d.watch, d.jwatch);
+
+            // Build Yupi 5
+            let yupi5Html = "";
+            yupi5Html += renderRow("Ishida", d.ishida2, "");
+            yupi5Html += renderRow("Kawashima", d.kwshima, d.jkwshima);
+            yupi5Html += renderRow("Cup Sealer", d.tl, "");
+            yupi5Html += renderRow("Sandwich", d.sandwich, "");
+            yupi5Html += renderRow("Rollete", d.rollete, d.jrollete);
+            yupi5Html += renderRow("PP", d.pp5, d.jpp5);
+            yupi5Html += renderRow("MB", d.mb5, d.jmb5);
+            yupi5Html += renderRow("MB Max", d.max, d.jmax);
+            yupi5Html += renderRow("G. Fries", d.gfries5, d.jgfries5);
+
+            // NOTE PEKERJAAN dipisahkan per area
+            const urutanAreaNote = ["Yupi 1", "Yupi 3/4", "Yupi 5", "Lainnya"];
+            const areaNotes = [];
+
+            urutanAreaNote.forEach(areaNama => {
+                const notes = g.kerusakanByArea[areaNama];
+                if (notes && notes.size > 0) {
+                    areaNotes.push({
+                        area: areaNama,
+                        text: Array.from(notes).join("\n").trim()
+                    });
+                }
+            });
+
+            // Antisipasi area lain yang belum ada di urutan standar
+            Object.keys(g.kerusakanByArea).forEach(areaNama => {
+                if (!urutanAreaNote.includes(areaNama)) {
+                    const notes = g.kerusakanByArea[areaNama];
+                    if (notes && notes.size > 0) {
+                        areaNotes.push({
+                            area: areaNama,
+                            text: Array.from(notes).join("\n").trim()
+                        });
+                    }
+                }
+            });
+
+            const kerusakanHtml = areaNotes.length > 0
+                ? areaNotes.map(item => `
+                    <div class="note-area-block">
+                        <div class="note-area-title">${escapeHtml(item.area)}</div>
+                        <div class="note-area-text">${escapeHtml(item.text)}</div>
+                    </div>
+                `).join("")
+                : `<div class="note-area-text">-</div>`;
+
+            const mainDocId = g.docIds[0];
+
+            return `
+            <div class="laporan-card">
+                <table class="info-header">
+    <tr>
+        <td style="width:80px;">Hari / Tgl</td>
+        <td style="width:10px; text-align:center;">:</td>
+        <td>${escapeHtml(g.tanggalTeks || g.tanggal || "-")}</td>
+    </tr>
+    <tr>
+        <td>Shift</td>
+        <td style="text-align:center;">:</td>
+        <td>${escapeHtml(g.shift || "-")}</td>
+    </tr>
+    <tr>
+        <td>Ka.Shift</td>
+        <td style="text-align:center;">:</td>
+        <td>${escapeHtml(g.kashift || "-")}</td>
+    </tr>
+    <tr>
+        <td>Personil</td>
+        <td style="text-align:center;">:</td>
+        <td>${escapeHtml(personilText)}</td>
+    </tr>
+</table>
+
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Area</th>
+                            <th>Nama Produk</th>
+                            <th class="col-sigma">Σ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${yupi1Html ? `<tr class="section-header"><td colspan="3">YUPI 1</td></tr>${yupi1Html}` : ""}
+                        ${yupi34Html ? `<tr class="section-header"><td colspan="3">YUPI 3/4</td></tr>${yupi34Html}` : ""}
+                        ${yupi5Html ? `<tr class="section-header"><td colspan="3">YUPI 5</td></tr>${yupi5Html}` : ""}
+                        <tr class="section-header"><td colspan="3">NOTE PEKERJAAN</td></tr>
+                        <tr>
+                            <td colspan="3" class="note-container">
+                                ${kerusakanHtml}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="card-actions">
+                    <button class="btn-edit" onclick="editLaporan('${mainDocId}')">Edit</button>
+                    <button class="btn-delete" onclick="hapusLaporan('${mainDocId}')">Hapus</button>
+                </div>
+            </div>
+            `;
+        }).join("");
+    } catch(error) {
+        console.error(error);
+        status.textContent = "Gagal memuat data";
+    }
+}
+async function editLaporan(mainId) {
+    try {
+        const doc = await db.collection("laporan_shift").doc(mainId).get();
+        if (!doc.exists) return alert("Data tidak ditemukan");
+        const d = doc.data();
+
+        document.getElementById("editDocId").value = mainId;
+        document.getElementById("modalTitle").textContent = "Edit Laporan Shift";
+
+        // Query seluruh dokumen pada Tanggal dan Shift yang sama
+        const snapshot = await db.collection("laporan_shift")
+            .where("tanggal", "==", d.tanggal)
+            .where("shift", "==", d.shift)
+            .get();
+
+        let mergedData = {};
+        let noteByArea = {};     // Pemetaan note kerusakan berdasarkan area
+        let personilByArea = {}; // Pemetaan personil berdasarkan area
+
+        snapshot.forEach(subDoc => {
+            const subData = subDoc.data();
+            
+            // Tentukan identitas area dokumen
+            let aKey = subData.area || "";
+            if (!aKey && subData.areaText) {
+                if (subData.areaText.includes("1")) aKey = "yupi1";
+                else if (subData.areaText.includes("3") || subData.areaText.includes("4")) aKey = "yupi34";
+                else if (subData.areaText.includes("5")) aKey = "yupi5";
+            }
+
+            // Simpan note berdasarkan key area
+            if (aKey && subData.kerusakan) {
+                noteByArea[aKey] = subData.kerusakan;
+            }
+
+            // Simpan personil berdasarkan key area
+            if (aKey && subData.personil) {
+                personilByArea[aKey] = subData.personil;
+            }
+
+            // Gabungkan field input lain (abaikan 'kerusakan' & 'personil' agar tidak saling timpa)
+            for (let key in subData) {
+                if (key !== "kerusakan" && key !== "personil" && subData[key] !== undefined && subData[key] !== null && subData[key] !== "") {
+                    mergedData[key] = subData[key];
+                }
+            }
+        });
+
+        // 1. Tentukan Area spesifik dokumen yang diklik
+        let areaVal = d.area || "";
+        if (!areaVal && d.areaText) {
+            if (d.areaText.includes("1")) areaVal = "yupi1";
+            else if (d.areaText.includes("3") || d.areaText.includes("4")) areaVal = "yupi34";
+            else if (d.areaText.includes("5")) areaVal = "yupi5";
+        }
+
+        // 2. Isi seluruh field form input (kecuali personil & kerusakan)
+        for (let key in mergedData) {
+            let el = document.getElementById(key);
+            if (el) {
+                el.value = mergedData[key];
+            }
+        }
+
+        // 3. Set dropdown Area & tampilkan form area
+        document.getElementById("area").value = areaVal;
+        pilihArea();
+
+        // 4. Ambil Personil & Note secara spesifik berdasarkan Area
+        function updateAreaSpecificFields(targetArea) {
+            // Set Personil
+            const personilTepat = personilByArea[targetArea] || d.personil || [];
+            $("#personil").val(personilTepat).trigger("change");
+
+            // Set Note Pekerjaan
+            const noteTepat = noteByArea[targetArea] !== undefined ? noteByArea[targetArea] : (d.kerusakan || "");
+            document.getElementById("kerusakan").value = noteTepat;
+        }
+
+        // Jalankan pengisian personil & note untuk area yang dipilih pertama kali
+        updateAreaSpecificFields(areaVal);
+
+        // 5. Event listener saat pengguna mengganti pilihan Area di dropdown
+        document.getElementById("area").onchange = function() {
+            pilihArea();
+            updateAreaSpecificFields(this.value);
+        };
+
+        // 6. Tampilkan Modal & Re-inisialisasi Select2
+        document.getElementById("formModal").classList.add("show");
+        document.body.style.overflow = "hidden";
+
+        setTimeout(() => {
+            $('#personil').select2({
+                placeholder: "Pilih Nama",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#formModal')
+            });
+        }, 100);
+
+    } catch (e) {
+        alert("Gagal memuat data edit: " + e.message);
+    }
+}
+
+async function hapusLaporan(id) {
+    if(!confirm("Apakah Anda yakin ingin menghapus laporan ini?")) return;
+    try {
+        await db.collection("laporan_shift").doc(id).delete();
+        alert("Laporan berhasil dihapus");
+        muatLaporan();
+    } catch(e) {
+        alert("Gagal menghapus: " + e.message);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    muatLaporan();
+});
+
+function pilihArea() {
+    document.getElementById("yupi1").style.display = "none";
+    document.getElementById("yupi34").style.display = "none";
+    document.getElementById("yupi5").style.display = "none";
+
+    const area = document.getElementById("area").value;
+    if (area) {
+        document.getElementById(area).style.display = "block";
+    }
+}
+
+$(document).ready(function() {
+    $('#personil').select2({
+        placeholder: "Pilih Nama",
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#formModal')
+    });
+
+    // Saat keyboard HP muncul, geser field aktif agar tetap terlihat
+    document.querySelectorAll('#laporanForm input, #laporanForm select, #laporanForm textarea')
+        .forEach(el => {
+            el.addEventListener('focus', function() {
+                setTimeout(() => {
+                    this.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }, 250);
+            });
+        });
+});
+
+// Autocomplete Setup
+const shortcutMap = {
+    a: ["Animal", "Appeton", "Apple ring", "Aquarium"],
+    b: ["Baby Shark", "Bear", "Berrybonz","Beyond Fit", "Brite Worm"],
+    c: ["Calci Bean", "CDZ", "Chocoo Glee", "Chop chop", "Chiby", "Chupa Chup", "Cola", "Cola bonz", "Cola Burger", "Cookies", "Cooktail", "Confetty kiss", "Crunchy Gummies"],
+    d: ["Dippy","Dr Pepper 128 gr"], 
+    e: ["Enervon C", "Exotic Mango", "Expert boost"], 
+    f: ["Fitkom", "Fruit bites", "Frunkfuter", "Fun Gum"],
+    g: ["Giant Cola", "Grape", "Gummy Bear", "Gummy Bunnies", "Gummy Fang", "Gummy Fries"], 
+    h: ["Happy Bear 120 gr"], 
+    i: ["Iced Cola", "Inaco"],
+    j: ["JFF", "Jungle Fun"], 
+    k: ["Krabby Patties", "Krabby Patties 72 gr", "Kuai kuai"],
+    l: ["Little Star"], 
+    m: ["MB Cola", "MB Max", "MB Sour", "MB Twin","MB WO", "MB Yupi", "MB Yupi 500gr", "Milly Moose", "Milk Shake", "Mini Monz", "My Watch"],
+    n: ["Neon Stix", "Neon Stix 120 gr", "Noodle"], 
+    o: ["OFF", "Orange"],
+    p: ["Party Mix", "Pastilles", "Pizza", "Puzzle"], 
+    q: ["QQ"], 
+    r: ["Raspberry & Blackberry"],
+    s: ["Sandwich", "Sour Giant Cola 500 gr", "Sour O Ring", "Sea World","Skulls",  "Starlite", "St kiss", "St kiss 45 gr", "St kiss 120 gr", "Sweet Heart"],
+    t: ["TJ Joybee", "Tropical"], 
+    v: ["Vicee", "Vidoran", "Vitaminis", "Vita C Gummies", "Vit D+"],
+    w: ["Water Melon", "Worm"], 
+    y: ["Yoghurt", "Youvit"],
+    z: ["Zugi Zagi Zug"]
+};
+
+const setupAutocomplete = (input) => {
+    let suggestionBox = document.createElement("div");
+    suggestionBox.className = "custom-autocomplete-list";
+    input.parentNode.appendChild(suggestionBox);
+    input.addEventListener('input', () => {
+        const fullVal = input.value;
+        const parts = fullVal.split(/,\s*/); 
+        const lastPart = parts[parts.length - 1].toLowerCase(); 
+        
+        if (lastPart.length === 0) { suggestionBox.style.display = "none"; return; }
+        
+        const firstChar = lastPart[0];
+        if (shortcutMap[firstChar]) {
+            const filtered = shortcutMap[firstChar].filter(item => item.toLowerCase().startsWith(lastPart));
+            if (filtered.length > 0) {
+                suggestionBox.innerHTML = "";
+                suggestionBox.style.display = "block";
+                filtered.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "custom-autocomplete-item";
+                    div.textContent = item;
+                    div.onclick = (e) => {
+                        e.preventDefault();
+                        parts[parts.length - 1] = item;
+                        input.value = parts.join(", ");
+                        suggestionBox.style.display = "none";
+                        input.focus();
+                    };
+                    suggestionBox.appendChild(div);
+                });
+            } else suggestionBox.style.display = "none";
+        } else suggestionBox.style.display = "none";
+    });
+    document.addEventListener("click", (e) => { if (e.target !== input) suggestionBox.style.display = "none"; });
+};
+
+const statusInputs = ["starchless", "ishida", "ishida1", "kawashima", "multipond", "pp3", "dippy", "animal", "animal2", "zugi", "gfries", "gfries5", "noodle", "berry", "crunchy", "ishida2", "kwshima", "tl", "sandwich", "pp5", "mb4", "mb5", "max", "rollete", "watch"];
+statusInputs.forEach(id => { const el = document.getElementById(id); if (el) setupAutocomplete(el); });
+
+function baris(label, isi, lebar = 14, wrap = 34) {
+    isi = (isi ?? "").toString().trim();
+    if (!isi) isi = "-";
+    const kiri = label.padEnd(lebar, " ");
+    if (isi.length <= wrap) return `${kiri}: ${isi}`;
+    let hasil = `${kiri}: ${isi.substring(0, wrap)}`;
+    let sisa = isi.substring(wrap);
+    while (sisa.length > 0) {
+        hasil += "\n" + " ".repeat(lebar + 2) + sisa.substring(0, wrap);
+        sisa = sisa.substring(wrap);
+    }
+    return hasil;
+}
+
+async function kirimKeWA() {
+    const tombolKirim = document.querySelector(".send");
+    if (tombolKirim.disabled) return;
+    tombolKirim.disabled = true;
+    tombolKirim.style.opacity = "0.6";
+
+    const editId = document.getElementById("editDocId").value;
+    const tanggalInput = document.getElementById("tanggal").value;
+    const shift = document.getElementById("shift").value;
+    const kashift = document.getElementById("kashift").value;
+    const note = document.getElementById("kerusakan").value;
+
+    let tanggalTeks = "-";
+    if (tanggalInput) {
+        const d = new Date(tanggalInput);
+        const hari = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+        const bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        tanggalTeks = `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    let personil = [];
+    $("#personil option:selected").each(function(){ personil.push($(this).text()); });
+
+    const areaValue = document.getElementById("area").value;
+    let areaText = areaValue === "yupi1" ? "Yupi 1" : areaValue === "yupi34" ? "Yupi 3/4" : areaValue === "yupi5" ? "Yupi 5" : "";
+
+    let pesan = [];
+    function tambahData(arr, nama, nilai) {
+        if (!nilai || nilai.trim() === "") return;
+        arr.push(`${nama.padEnd(14, " ")}: ${nilai}`);
+    }
+    function tambahJumlah(arr, jumlah) {
+        if (!jumlah || jumlah.trim() === "") return;
+        arr.push(`${"Jumlah".padEnd(14, " ")}: ${jumlah}`);
+    }
+
+    pesan.push("```");
+    pesan.push("LAPORAN SHIFT TEKNIK PACKING\n");
+    pesan.push(baris("Hari/Tgl", tanggalTeks));
+    pesan.push(baris("Shift", shift));
+    pesan.push(baris("Ka.Shift", kashift));
+    pesan.push(baris("Personil", personil.join(", ")));
+    pesan.push(baris("Area", areaText));
+    pesan.push("\nPRODUKSI");
+
+    if(areaValue=="yupi1"){
+        tambahData(pesan,"PP",document.getElementById("starchless").value);
+        tambahJumlah(pesan,document.getElementById("jstarchless").value);
+    }
+    if(areaValue=="yupi34"){
+        tambahData(pesan,"Ishida 1",document.getElementById("ishida").value);
+        tambahData(pesan,"Ishida 2",document.getElementById("ishida1").value);
+        tambahData(pesan,"Kawashima",document.getElementById("kawashima").value);
+        tambahJumlah(pesan,document.getElementById("jkawashima").value);
+        tambahData(pesan,"Multipond",document.getElementById("multipond").value);
+        tambahJumlah(pesan,document.getElementById("jmultipond").value);
+        tambahData(pesan,"Dippy",document.getElementById("dippy").value);
+        tambahData(pesan,"Animal",document.getElementById("animal").value);
+        tambahJumlah(pesan,document.getElementById("janimal").value);
+        tambahData(pesan,"Animal L2",document.getElementById("animal2").value);
+        tambahJumlah(pesan,document.getElementById("janimal2").value);
+        tambahData(pesan,"Zugi",document.getElementById("zugi").value);
+        tambahJumlah(pesan,document.getElementById("jzugi").value);
+        tambahData(pesan,"Cup Sealer",document.getElementById("noodle").value);
+        tambahData(pesan,"Berrybonz",document.getElementById("berry").value);
+        tambahJumlah(pesan,document.getElementById("jberry").value);
+        tambahData(pesan,"Crunchy",document.getElementById("crunchy").value);
+        tambahJumlah(pesan,document.getElementById("jcrunchy").value);
+        tambahData(pesan,"G Fries",document.getElementById("gfries").value);
+        tambahJumlah(pesan,document.getElementById("jgfries").value);
+        tambahData(pesan,"MB Atas",document.getElementById("mb4").value);
+        tambahJumlah(pesan,document.getElementById("jmb4").value);
+        tambahData(pesan,"My Watch",document.getElementById("watch").value);
+        tambahJumlah(pesan,document.getElementById("jwatch").value);
+        tambahData(pesan,"PP",document.getElementById("pp3").value);
+        tambahJumlah(pesan,document.getElementById("jpp3").value);
+    }
+    if(areaValue=="yupi5"){
+        tambahData(pesan,"Ishida",document.getElementById("ishida2").value);
+        tambahData(pesan,"Kawashima",document.getElementById("kwshima").value);
+        tambahJumlah(pesan,document.getElementById("jkwshima").value);
+        tambahData(pesan,"Cup Sealer",document.getElementById("tl").value);
+        tambahData(pesan,"Sandwich",document.getElementById("sandwich").value);
+        tambahData(pesan,"PP",document.getElementById("pp5").value);
+        tambahJumlah(pesan,document.getElementById("jpp5").value);
+        tambahData(pesan,"MB",document.getElementById("mb5").value);
+        tambahJumlah(pesan,document.getElementById("jmb5").value);
+        tambahData(pesan,"MB Max",document.getElementById("max").value);
+        tambahJumlah(pesan,document.getElementById("jmax").value);
+        tambahData(pesan,"Rollete",document.getElementById("rollete").value);
+        tambahJumlah(pesan,document.getElementById("jrollete").value);
+        tambahData(pesan,"G Fries",document.getElementById("gfries5").value);
+        tambahJumlah(pesan,document.getElementById("jgfries5").value);
+    }
+
+    pesan.push("\nNOTE PEKERJAAN");
+    pesan.push(note);
+    pesan.push("```");
+
+    const semuaData = {};
+    document.querySelectorAll(".modal input, .modal select, .modal textarea").forEach(input => {
+        if (input.id === "personil") {
+            semuaData.personil = $(input).val() || [];
+        } else if (input.id) {
+            semuaData[input.id] = input.value;
+        }
+    });
+
+    const dataFirestore = {
+    ...semuaData,
+    area: areaValue, // <--- Tambahkan baris ini
+    tanggalTeks: tanggalTeks,
+    areaText: areaText,
+    laporanWhatsApp: pesan.join("\n"),
+    dibuatPada: firebase.firestore.FieldValue.serverTimestamp()
+};
+
+    try {
+        if(editId) {
+            await db.collection("laporan_shift").doc(editId).update(dataFirestore);
+            alert("Laporan berhasil diperbarui!");
+        } else {
+            await db.collection("laporan_shift").add(dataFirestore);
+            const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(pesan.join("\n"));
+            window.open(url, "_blank");
+        }
+
+        tutupForm();
+        tombolKirim.disabled = false;
+        tombolKirim.style.opacity = "1";
+        muatLaporan();
+    } catch (error) {
+        console.error("Gagal:", error);
+        alert("Gagal menyimpan data: " + error.message);
+        tombolKirim.disabled = false;
+        tombolKirim.style.opacity = "1";
+    }
+}
+</script>
+</body>
+</html>
